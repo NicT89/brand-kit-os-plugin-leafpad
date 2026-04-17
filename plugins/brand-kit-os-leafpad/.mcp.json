@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "brand-kit-os": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/mcp-remote",
+        "https://fupwpcqmyykfiuakjxxc.supabase.co/functions/v1/mcp-server",
+        "--header",
+        "Authorization: Bearer ${user_config.brand_kit_api_key}"
+      ]
+    },
+    "leafpad": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@anthropic-ai/mcp-remote",
+        "https://leafpad.io/mcp"
+      ]
+    }
+  }
+}
