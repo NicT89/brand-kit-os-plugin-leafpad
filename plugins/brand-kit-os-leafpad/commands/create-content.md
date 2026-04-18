@@ -1,4 +1,9 @@
-# /brand-kit:create-content
+---
+description: Generate brand-aligned content for a specified content type, audience, and topic
+argument-hint: <content type> for <audience> about <topic>
+---
+
+# Create Content
 
 Generate brand-aligned content for a specified content type, audience, and topic using Brand Kit OS data.
 

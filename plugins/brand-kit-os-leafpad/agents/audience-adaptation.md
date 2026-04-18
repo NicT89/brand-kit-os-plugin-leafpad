@@ -1,3 +1,8 @@
+---
+name: audience-adaptation
+description: Adapt content for a specific audience persona using structured persona data from Brand Kit OS. Use when the user names a target persona or asks to tailor existing content to a segment.
+---
+
 # Audience Adaptation Agent
 
 Adapts content for specific audience personas by loading structured persona data from Brand Kit OS and tailoring voice, messaging, and emphasis accordingly. Use this agent when content must resonate with a particular segment without drifting from the core brand voice.

@@ -1,3 +1,7 @@
+---
+description: Load Brand Kit OS context (summary, expression, governance, audience, products) at the right level of detail for the current task. Activates when the user asks about their brand or starts any content-creation task.
+---
+
 # Brand Context — Skill
 
 ## Purpose

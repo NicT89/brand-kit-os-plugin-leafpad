@@ -7,7 +7,7 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 - **2 MCP servers** — Brand Kit OS (brand context) + Leafpad (blog publishing)
 - **2 skills** — Brand Context loading + Voice Enforcement
 - **5 agents** — Content generation, brand review, audience adaptation, QA, and Cowork digest-to-Leafpad publisher
-- **2 commands** — `/brand-kit:enforce-voice` and `/brand-kit:create-content`
+- **2 commands** — `/brand-kit-os-leafpad:enforce-voice` and `/brand-kit-os-leafpad:create-content`
 - **Session hook** — auto-loads your brand summary at session start
 
 ## Prerequisites

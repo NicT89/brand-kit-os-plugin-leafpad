@@ -1,4 +1,9 @@
-# /brand-kit:enforce-voice
+---
+description: Load brand guidelines from Brand Kit OS and apply them to a content request
+argument-hint: <content request or existing content to refine>
+---
+
+# Enforce Voice
 
 Load brand guidelines from Brand Kit OS and apply them to the content request provided in `$ARGUMENTS`.
 

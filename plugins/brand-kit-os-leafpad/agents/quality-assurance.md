@@ -1,3 +1,8 @@
+---
+name: quality-assurance
+description: Final-pass compliance check on content against the brand's voice, tone, terminology, and governance rules. Use as the last gate before delivering any brand-aligned output.
+---
+
 # Quality Assurance Agent
 
 Validates content against brand standards before delivery. Performs structured compliance checks for voice, tone, terminology, governance, and completeness. Use this agent as the final gate before presenting content to the user.

@@ -6,7 +6,6 @@
   "homepage": "https://brandkitos.com",
   "repository": "https://github.com/NicT89/brand-kit-os-plugin-leafpad",
   "license": "MIT",
-  "icon": "https://brandkitos.com/favicon.ico",
   "capabilities": {
     "mcp": true,
     "skills": true,

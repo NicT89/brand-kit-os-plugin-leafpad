@@ -1,3 +1,8 @@
+---
+name: cowork-digest-publisher
+description: Turn a Cowork news digest into a published brand-aligned blog post on Leafpad. Selects the most relevant topic, loads brand context, drafts and self-validates the article, then publishes via the Leafpad MCP server.
+---
+
 # Cowork Digest Publisher Agent
 
 Turns a Cowork scheduled news digest into a published, brand-aligned blog post on Leafpad. Selects the most relevant topic from the digest, loads brand voice and governance from Brand Kit OS, writes the article, self-validates, and auto-publishes via the Leafpad MCP server.

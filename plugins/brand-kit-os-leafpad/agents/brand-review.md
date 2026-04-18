@@ -1,3 +1,8 @@
+---
+name: brand-review
+description: Review existing content against brand standards and flag voice, tone, and governance gaps with actionable fixes. Use when the user pastes a draft, legacy copy, or competitor content and asks for a brand evaluation.
+---
+
 # Brand Review Agent
 
 Reviews existing content against brand standards to identify alignment gaps, voice inconsistencies, and governance violations. Use this agent when evaluating content that was not generated through the plugin — such as drafts, competitor copy, or legacy materials.

@@ -1,3 +1,7 @@
+---
+description: Enforce the brand's voice, tone, and governance constraints on any generated or reviewed content. Activates after brand context is loaded, or when the user asks whether something is on-brand.
+---
+
 # Brand Voice Enforcement — Skill
 
 ## Purpose

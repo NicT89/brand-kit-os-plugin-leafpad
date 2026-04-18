@@ -1,3 +1,8 @@
+---
+name: content-generation
+description: Generate brand-aligned content (emails, proposals, social posts, ads, landing pages) by loading voice rules, governance, and audience data from Brand Kit OS. Use for long-form or multi-constraint content tasks.
+---
+
 # Content Generation Agent
 
 Generates brand-aligned content by loading brand guidelines via MCP and applying them to specific content requests. Use this agent for long-form content, batch generation, or when multiple brand constraints must be balanced simultaneously.

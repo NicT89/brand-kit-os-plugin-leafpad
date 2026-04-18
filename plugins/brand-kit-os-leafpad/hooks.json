@@ -1,26 +1,15 @@
 {
-  "hooks": [
-    {
-      "type": "session_start",
-      "description": "Auto-loads a compact brand summary at session start so Claude always has baseline brand context.",
-      "steps": [
-        {
-          "tool": "list_brand_kits",
-          "description": "Discover available brand kits."
-        },
-        {
-          "condition": "exactly_one_brand_kit",
-          "tool": "get_brand_kit_summary",
-          "args": { "brand_kit_id": "{{brand_kit_id}}" },
-          "description": "Auto-load the summary of the user's single brand kit."
-        },
-        {
-          "condition": "multiple_brand_kits",
-          "action": "prompt_user",
-          "message": "You have multiple brand kits. Which one would you like to work with?",
-          "description": "Ask the user to choose a brand kit before loading context."
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Call list_brand_kits via the brand-kit-os MCP server. If exactly one brand kit exists, call get_brand_kit_summary for it and emit a two-sentence summary. If multiple exist, list their names and ask which to use on the first brand-related prompt. If none exist or the brand-kit-os MCP server is not configured, return silently without any output."
+          }
+        ]
+      }
+    ]
+  }
 }
