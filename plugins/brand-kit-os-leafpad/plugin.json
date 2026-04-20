@@ -1,0 +1,22 @@
+{
+  "name": "brand-kit-os-leafpad",
+  "version": "1.2.0",
+  "description": "Brand context, voice enforcement, and Leafpad blog publishing for Claude — powered by Brand Kit OS.",
+  "author": "Nicolas Thatcher",
+  "homepage": "https://brandkitos.com",
+  "repository": "https://github.com/NicT89/brand-kit-os-plugin-leafpad",
+  "license": "MIT",
+  "capabilities": {
+    "mcp": true,
+    "skills": true,
+    "hooks": true,
+    "agents": true,
+    "commands": true
+  },
+  "userConfig": {
+    "brand_kit_api_key": {
+      "description": "Your Brand Kit OS API key (get one at https://brandkitos.com/settings → API Keys)",
+      "sensitive": true
+    }
+  }
+}

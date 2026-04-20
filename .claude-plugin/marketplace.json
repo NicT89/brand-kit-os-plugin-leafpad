@@ -1,0 +1,19 @@
+{
+  "name": "brand-kit-os-leafpad",
+  "owner": {
+    "name": "Nicolas Thatcher",
+    "url": "https://brandkitos.com"
+  },
+  "metadata": {
+    "description": "Brand Kit OS plugins for Claude — brand context, voice enforcement, and Leafpad blog publishing.",
+    "version": "1.2.0"
+  },
+  "plugins": [
+    {
+      "name": "brand-kit-os-leafpad",
+      "source": "./plugins/brand-kit-os-leafpad",
+      "description": "Connect Brand Kit OS brand context + Leafpad blog publishing to Claude. Includes skills, agents, commands, and two MCP servers.",
+      "version": "1.2.0"
+    }
+  ]
+}

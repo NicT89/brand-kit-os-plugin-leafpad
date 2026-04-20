@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Call list_brand_kits via the brand-kit-os MCP server. If exactly one brand kit exists, call get_brand_kit_summary for it and emit a two-sentence summary. If multiple exist, list their names and ask which to use on the first brand-related prompt. If none exist or the brand-kit-os MCP server is not configured, return silently without any output."
+          }
+        ]
+      }
+    ]
+  }
+}
