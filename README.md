@@ -6,8 +6,8 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 
 - **2 MCP servers** — Brand Kit OS (brand context) + Leafpad (blog publishing)
 - **2 skills** — Brand Context loading + Voice Enforcement
-- **5 agents** — Content generation, brand review, audience adaptation, QA, and Cowork digest-to-Leafpad publisher
-- **2 commands** — `/brand-kit-os-leafpad:enforce-voice` and `/brand-kit-os-leafpad:create-content`
+- **7 agents** — Content generation, brand review, audience adaptation, QA, SEO optimizer, Leafpad publisher, and Cowork digest-to-Leafpad publisher
+- **3 commands** — `/brand-kit-os-leafpad:enforce-voice`, `/brand-kit-os-leafpad:create-content`, and `/brand-kit-os-leafpad:publish-pipeline`
 - **Session hook** — auto-loads your brand summary at session start
 
 ## Prerequisites
@@ -28,8 +28,24 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
    ```
    /plugin install brand-kit-os-leafpad@brand-kit-os-leafpad
    ```
-3. When prompted, paste your Brand Kit OS API key.
+3. When prompted, paste your Brand Kit OS API key and pick a default `publish_mode` (`draft`, `published`, or `scheduled`).
 4. Restart Claude. Ask "What brands do I have?" to verify.
+
+## Publishing
+
+`/brand-kit-os-leafpad:publish-pipeline <topic | brief | pasted source>` runs the full pipeline: load brand context → draft → SEO + internal linking → QA → publish to Leafpad.
+
+It honors the `publish_mode` you chose at install (default `draft`). Override per-run with a flag:
+
+- `--draft` — force draft
+- `--publish` — go live immediately
+- `--schedule <ISO-8601>` — schedule for a future timestamp
+
+Example:
+
+```
+/brand-kit-os-leafpad:publish-pipeline 3 ways retention beats acquisition for B2B SaaS --publish
+```
 
 ### Manual install
 

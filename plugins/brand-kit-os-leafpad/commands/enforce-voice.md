@@ -29,3 +29,5 @@ If `list_brand_kits` returns no results, inform the user:
 2. If the user's request conflicts with governance guidelines, explain the conflict and offer an on-brand alternative
 3. Reference specific brand guidelines when explaining content choices (e.g., "Per your tone dimensions, I kept this formal…")
 4. Check `content_categories` in expression data for platform-specific rules before generating
+
+To publish the result to Leafpad, run `/brand-kit-os-leafpad:publish-pipeline`.

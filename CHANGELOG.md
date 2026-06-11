@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.3.0 — 2026-06-11
+
+- New command `/brand-kit-os-leafpad:publish-pipeline` — end-to-end orchestrator that drafts, optimizes for SEO, runs QA, and publishes to Leafpad in one call
+- New agent `seo-optimizer` — builds the `seo` block, suggests internal links from existing Leafpad posts, and proposes tags (without rewriting the body)
+- New agent `leafpad-publisher` — generic publisher that encapsulates field mapping, mode dispatch, and failure handling
+- New `publish_mode` userConfig (`draft` | `published` | `scheduled`, default `draft`) — controls default publishing behavior
+- Per-run override flags `--draft`, `--publish`, and `--schedule <iso>` on `/publish-pipeline`
+- Refactor: `cowork-digest-publisher` now delegates its publish step to `leafpad-publisher` (no behavior change for digest users)
+
 ## 1.2.0 — 2026-04-18
 
 Initial public marketplace release.
