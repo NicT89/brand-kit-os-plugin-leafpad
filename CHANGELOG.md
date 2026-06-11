@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1 — 2026-06-11
+
+- **Fix**: `.mcp.json` referenced `@anthropic-ai/mcp-remote` which does not exist on npm; corrected to `mcp-remote` (v0.1.38+). Without this fix the plugin's MCP servers cannot launch on install.
+- **Docs**: `README.md` Prerequisites now lists Node 18+ and notes that Leafpad uses OAuth on first connect.
+- **Docs**: new test protocol at `docs/testing/claude-desktop-test-protocol.md` for end-to-end validation in Claude Desktop Chat.
+
 ## 1.4.0 — 2026-06-11
 
 - Full-depth **Brand Kit OS → Leafpad field mapping** — `/publish-pipeline` now pulls every relevant brand section (`core`, `personality`, `expression`, `governance`, `audience`, `products`, `personas`, knowledge files) and maps it into a rich-article object covering all candidate Leafpad fields (excerpt, feature_image, og_image, author, categories, visibility, content_format, reading_time, canonical_url, and more)
