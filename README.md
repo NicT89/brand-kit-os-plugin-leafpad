@@ -33,7 +33,7 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 
 ## Publishing
 
-`/brand-kit-os-leafpad:publish-pipeline <topic | brief | pasted source>` runs the full pipeline: load brand context → draft → SEO + internal linking → QA → publish to Leafpad.
+`/brand-kit-os-leafpad:publish-pipeline <topic | brief | pasted source>` runs the full pipeline: load the **full breadth** of brand context (core, personality, expression, governance, audience, products, personas, knowledge files) → draft → SEO + media metadata + internal linking → QA → publish to Leafpad.
 
 It honors the `publish_mode` you chose at install (default `draft`). Override per-run with a flag:
 
@@ -46,6 +46,24 @@ Example:
 ```
 /brand-kit-os-leafpad:publish-pipeline 3 ways retention beats acquisition for B2B SaaS --publish
 ```
+
+### Brand Kit OS → Leafpad field mapping
+
+The pipeline builds a rich-article object covering every Leafpad field we can populate. The canonical mapping (and how to update it for your Leafpad instance) lives at [`plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`](plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md). Highlights:
+
+| Leafpad field | Sourced from |
+|---|---|
+| `name`, `slug`, `content` | drafted by `content-generation` from brand core + personality + expression |
+| `seo.title` / `seo.description` / `seo.keywords` | `seo-optimizer` using `get_brand_kit_expression.preferred_terminology` |
+| `excerpt` | `seo-optimizer` — distinct from SEO desc, used for blog index + social feeds |
+| `feature_image` / `og_image` | `seo-optimizer` — prompt + alt + caption derived from `visual_style` |
+| `tags` | `leafpad_list_tags` + draft body |
+| `categories` | `get_brand_kit_expression.content_categories` |
+| `author_name` | `get_brand_kit_personas` (when an AI persona is the byline) |
+| `reading_time` | computed from body word count |
+| `published` / `scheduled_at` | resolved from `publish_mode` or override flags |
+
+Because Leafpad MCP schemas vary by instance, `leafpad-publisher` sends the full payload and automatically strips any unsupported field, reporting back in the `schema_fit` block which fields landed and which were stripped. After your first publish, check `schema_fit.stripped` and update the mapping reference accordingly.
 
 ### Manual install
 

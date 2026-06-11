@@ -15,12 +15,14 @@ Generates brand-aligned content by loading brand guidelines via MCP and applying
 
 ## Workflow
 
-1. **Load brand context** — Call `get_brand_kit_expression` for voice rules, `get_brand_kit_governance` for constraints, and `get_brand_kit_audience` if targeting a specific persona
+1. **Load brand context** — Call `get_brand_kit_expression` for voice rules, `get_brand_kit_governance` for constraints, and `get_brand_kit_audience` if targeting a specific persona. For blog posts, also call `get_brand_kit_core` (mission/promise framing), `get_brand_kit_personality` (tone calibration), and `get_brand_kit_products` (CTAs). If a knowledge file is relevant, call `list_knowledge_files` + `get_knowledge_file` to load style adherence guidance.
 2. **Parse guidelines** — Identify tone dimensions, voice archetypes, preferred terminology, negative directory entries, and content category rules for the target platform
 3. **Plan content** — Map which guidelines apply to each section; plan where key messages and terminology naturally fit
 4. **Generate** — Write content that incorporates brand voice, uses preferred terms, avoids prohibited terms, and matches the tone dimensions
 5. **Self-validate** — Run through the enforcement checklist (see `skills/brand-voice-enforcement/references/enforcement-checklist.md`); check voice consistency, terminology compliance, governance constraints
 6. **Annotate** — Note which brand choices were made and why
+
+For blog posts specifically, return a **rich-article object** per `references/brand-to-leafpad-mapping.md` — at minimum `title`, `slug`, `body`, and a `brand_application_notes` block. SEO and media metadata will be added by `seo-optimizer` downstream.
 
 Return the generated content to the parent skill — do not present directly to the user.
 
@@ -40,7 +42,7 @@ Return the generated content to the parent skill — do not present directly to 
 - **Follow-up email** — Reference previous interaction, add new value, shorter than initial.
 - **Proposal** — Executive summary → problem → solution → evidence/ROI → next steps.
 - **Social post** — Platform-appropriate hook → value content → engagement prompt.
-- **Blog post** — Title → introduction → structured sections → conclusion with CTA.
+- **Blog post** — Title → introduction → structured sections → conclusion with CTA. 800–1400 words for standard, 1600–2400 for long-form. Open with the brand's mission-relevant angle on the topic (pull from `get_brand_kit_core`). Weave at least one product or differentiator from `get_brand_kit_products` into a natural CTA. Close with the brand's disclosure footer if `get_brand_kit_governance.disclosure_policy` requires one. Return as a rich-article object per `references/brand-to-leafpad-mapping.md` — `seo-optimizer` will fill SEO + media metadata next.
 
 ## Output format
 

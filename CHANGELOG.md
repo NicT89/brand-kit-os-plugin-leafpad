@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.4.0 — 2026-06-11
+
+- Full-depth **Brand Kit OS → Leafpad field mapping** — `/publish-pipeline` now pulls every relevant brand section (`core`, `personality`, `expression`, `governance`, `audience`, `products`, `personas`, knowledge files) and maps it into a rich-article object covering all candidate Leafpad fields (excerpt, feature_image, og_image, author, categories, visibility, content_format, reading_time, canonical_url, and more)
+- New canonical reference at `agents/references/brand-to-leafpad-mapping.md` documenting every Brand Kit source → Leafpad field
+- `leafpad-publisher` adds **strip-on-reject schema adaptation** — sends the rich payload, automatically removes any field the user's Leafpad instance rejects, and reports `schema_fit: { accepted, stripped, auto_generated }` so the user can refine the mapping for their instance
+- `seo-optimizer` upgraded to emit excerpt, feature/og image briefs (prompt + alt + caption), categories from brand kit `content_categories`, computed reading time, and optional canonical URL — all distinct from the SEO meta block
+- `content-generation` blog template now returns a rich-article object and consumes the full breadth of brand sections (mission, personality, products, knowledge files) for higher-quality long-form output
+
 ## 1.3.0 — 2026-06-11
 
 - New command `/brand-kit-os-leafpad:publish-pipeline` — end-to-end orchestrator that drafts, optimizes for SEO, runs QA, and publishes to Leafpad in one call
