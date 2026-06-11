@@ -1,22 +1,13 @@
 {
   "mcpServers": {
     "brand-kit-os": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://fupwpcqmyykfiuakjxxc.supabase.co/functions/v1/mcp-server",
-        "--header",
-        "Authorization: Bearer ${user_config.brand_kit_api_key}"
-      ]
+      "url": "https://www.brandkitos.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${user_config.brand_kit_api_key}"
+      }
     },
     "leafpad": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://leafpad.io/mcp"
-      ]
+      "url": "https://leafpad.io/mcp"
     }
   }
 }

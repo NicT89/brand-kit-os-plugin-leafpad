@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2 — 2026-06-11
+
+- **Endpoint change**: Brand Kit OS MCP server moved to `https://www.brandkitos.com/mcp` (was `https://fupwpcqmyykfiuakjxxc.supabase.co/functions/v1/mcp-server`).
+- **Transport change**: both MCP servers now use direct HTTP transport (`url` + `headers`) instead of the `mcp-remote` stdio proxy. This is faster, drops the Node-subprocess dependency, and matches the format Claude Desktop and VS Code natively expect. Leafpad's OAuth handshake is now handled by the host's MCP runtime rather than `mcp-remote`.
+- Docs: test protocol and README updated to the new transport shape.
+
 ## 1.4.1 — 2026-06-11
 
 - **Fix**: `.mcp.json` referenced `@anthropic-ai/mcp-remote` which does not exist on npm; corrected to `mcp-remote` (v0.1.38+). Without this fix the plugin's MCP servers cannot launch on install.

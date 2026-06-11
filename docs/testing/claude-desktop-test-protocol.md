@@ -12,18 +12,13 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 {
   "mcpServers": {
     "brand-kit-os": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://fupwpcqmyykfiuakjxxc.supabase.co/functions/v1/mcp-server",
-        "--header",
-        "Authorization: Bearer YOUR_BKOS_API_KEY_HERE"
-      ]
+      "url": "https://www.brandkitos.com/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_BKOS_API_KEY_HERE"
+      }
     },
     "leafpad": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://leafpad.io/mcp"]
+      "url": "https://leafpad.io/mcp"
     }
   }
 }
@@ -31,9 +26,9 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
 
 Replace `YOUR_BKOS_API_KEY_HERE` with your real key. Save. **Fully quit and reopen Claude Desktop** (Cmd-Q on macOS — not just close the window).
 
-> **Note on the package name.** Use `mcp-remote` (no scope). The plugin's `.mcp.json` references `@anthropic-ai/mcp-remote` which does not exist on npm — corrected in this release.
+> **Transport note.** Both servers use direct HTTP MCP transport — no `mcp-remote` stdio proxy needed. Claude Desktop's MCP runtime handles the connection (and Leafpad's OAuth handshake) natively.
 
-On first use of the Leafpad MCP, your browser will open for OAuth. Log in, approve, return to Claude Desktop. The token is cached.
+On first use of the Leafpad MCP, your browser will open for OAuth. Log in, approve, return to Claude Desktop. The token is cached by Claude Desktop.
 
 ## Path A — if you've installed the plugin via Cowork
 
@@ -253,6 +248,6 @@ reasoning Claude gave: ...
 ## Troubleshooting
 
 - **BKOS returns 403 / Host not in allowlist** — your machine isn't on BKOS's allowlist. Contact Brand Kit OS support.
-- **Leafpad OAuth loops** — delete `~/.mcp-auth/` and re-run. The token cache may be stale.
-- **`mcp-remote` not found** — ensure Node 18+ is installed (`node --version`). The package is installed on demand via `npx -y`.
+- **Leafpad OAuth loops** — quit Claude Desktop fully, reopen, and try again. If still looping, check Claude Desktop's MCP logs for the auth handshake error.
+- **Server shows as disconnected after config edit** — make sure you fully quit Claude Desktop (Cmd-Q on macOS) before reopening. Just closing the window doesn't reload the MCP config.
 - **Schema returned is empty / Claude says it doesn't know** — the MCP server may not advertise its schema. Ask Claude to call the tool with a minimal payload and report the validation error; that surfaces required fields by elimination.

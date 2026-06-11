@@ -14,9 +14,8 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 
 1. A Brand Kit OS account with a **Base or Premium** plan
 2. An API key from [Settings → API Keys](https://brandkitos.com/settings)
-3. Claude Desktop with Cowork mode, or Claude Code
-4. Node.js 18+ on your machine — both MCP servers connect via the `mcp-remote` stdio proxy
-5. A browser for first-time Leafpad sign-in — Leafpad MCP uses OAuth on first connect; the token is cached locally afterward
+3. Claude Desktop with Cowork mode, or Claude Code — both connect via the native HTTP MCP transport
+4. A browser for first-time Leafpad sign-in — Leafpad MCP uses OAuth on first connect; the token is cached by the host afterward
 
 ## Install
 
