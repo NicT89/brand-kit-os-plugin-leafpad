@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brandkitos.com/schemas/topic-sourcing-registry.json",
+  "title": "Brand Kit OS + Leafpad — Sources Registry",
+  "description": "User-editable registry that powers topic-scout (ideation) and citation-validator (backlinks). Lives at ~/.brand-kit-os-leafpad/registry.json or registry.<brand_kit_id>.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "brand_kit_id": {
+      "type": "string",
+      "description": "Optional. The Brand Kit OS kit this registry applies to. Omit for a global default."
+    },
+    "trusted_sources": {
+      "type": "array",
+      "description": "Industry RSS/Atom feeds or news sites for topic-scout to scan.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "url", "type"],
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "type": { "type": "string", "enum": ["rss", "atom", "html"] }
+        }
+      }
+    },
+    "authoritative_citations": {
+      "type": "array",
+      "description": "Pre-vetted domains citation-validator should prefer.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["domain"],
+        "properties": {
+          "domain": { "type": "string" },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "seo_keyword_clusters": {
+      "type": "array",
+      "description": "Keyword groups per content theme for SEO scoring and title generation.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["theme", "keywords"],
+        "properties": {
+          "theme": { "type": "string" },
+          "keywords": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "internal_news_feed_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Company changelog/press/blog feed for company-update topics. Optional."
+    },
+    "competitor_content_feeds": {
+      "type": "array",
+      "description": "Competitor blogs to watch for differentiation angles (inspiration only, never reproduce).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "url"],
+        "properties": {
+          "name": { "type": "string" },
+          "url": { "type": "string", "format": "uri" }
+        }
+      }
+    },
+    "citation_style_guide": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "How citation-validator formats outbound links.",
+      "properties": {
+        "anchor_style": {
+          "type": "string",
+          "enum": ["descriptive", "title-as-anchor"],
+          "default": "descriptive"
+        },
+        "rel": {
+          "type": "string",
+          "description": "Default rel attribute for outbound links.",
+          "default": "noopener"
+        },
+        "append_sources_block": {
+          "type": "boolean",
+          "description": "Whether to add a 'Sources' list at the foot of the article.",
+          "default": false
+        },
+        "allow_competitor_links": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "topic_cadence": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Default scheduling cadence for /plan-week.",
+      "properties": {
+        "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14, "default": 3 },
+        "preferred_days": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+          },
+          "default": ["monday", "wednesday", "friday"]
+        },
+        "preferred_time": {
+          "type": "string",
+          "description": "Local time HH:MM (24h).",
+          "default": "09:00"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "IANA timezone, e.g. America/New_York.",
+          "default": "UTC"
+        }
+      }
+    }
+  }
+}

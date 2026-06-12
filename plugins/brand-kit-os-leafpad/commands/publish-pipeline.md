@@ -27,7 +27,10 @@ If no override is given, the run uses `${user_config.publish_mode}` (default `dr
 ## Workflow
 
 1. **Resolve brand kit** — Call `get_brand_kit_summary` for the active brand. If multiple kits exist, call `list_brand_kits` and ask which to use.
-2. **Parse arguments** — Extract topic / brief / source from `$ARGUMENTS` and detect any override flag. If the input is too thin to draft from, ask one short follow-up before proceeding.
+2. **Parse arguments / find a topic** — Extract topic / brief / source from `$ARGUMENTS` and detect any override flag.
+   - If a topic/brief/source is given, use it.
+   - **If no topic is given** ("write me something on-brand"), delegate to the `topic-scout` agent (`count: 3`), present the top ideas, and let the user pick one — or auto-pick the highest-fit idea if they asked you to "just publish something."
+   - If input is too thin, ask one short follow-up.
 3. **Load full brand context in parallel** — pull the breadth of brand data per `agents/references/brand-to-leafpad-mapping.md`:
    - `get_brand_kit_core` — mission/promise framing for the intro
    - `get_brand_kit_personality` — tone calibration
@@ -40,14 +43,15 @@ If no override is given, the run uses `${user_config.publish_mode}` (default `dr
 4. **Research the topic against Leafpad's Knowledge Base** — Call `leafpad_get_company_data` with a question like *"What do we know about [topic]? Include any product specifics, case studies, or company positioning relevant to this article."* This pulls real org-specific facts to weave into the article. If the KB is empty or no relevant content exists, proceed without it.
 5. **Gather Leafpad context in parallel** — `leafpad_list_posts` (internal-link candidates) and `leafpad_list_tags` (tag reuse). Note: `leafpad_list_tags` may return `[]` per known limitation; `seo-optimizer` handles it.
 6. **Delegate drafting** — Call the `content-generation` agent with the `blog post` template, passing the full brand context, parsed brief, KB research findings, and any loaded knowledge files. Expect a rich-article object back with `body` in **HTML** (Leafpad's `content` field expects HTML).
-7. **Delegate SEO + media metadata** — Call the `seo-optimizer` agent. Apply its full patch: `seo`, `excerpt`, `feature_image` (now a real CDN URL via `leafpad_generate_image`), `og_image`, `tags`, `categories`, `internal_links`, `canonical_url`. Insert internal links into the body where suggested; do not otherwise modify the body.
-8. **Delegate QA** — Call the `quality-assurance` agent against the enforcement checklist at `skills/brand-voice-enforcement/references/enforcement-checklist.md`. If a critical check fails, revise once and re-run QA. If it fails twice, stop and surface the QA report to the user — do not publish.
-9. **Publish via `leafpad-publisher`** — Resolve `mode`:
-   - Override flag (if present) wins
-   - Otherwise use `${user_config.publish_mode}` (defaulting to `draft`)
+7. **Delegate citations** — Call the `citation-validator` agent with the draft. It adds 2–4 verified outbound citations (each WebFetch-checked) for factual claims, using the trusted-sources registry and brand citation style. Apply its insertion patch to the body.
+8. **Delegate SEO + media metadata** — Call the `seo-optimizer` agent. Apply its full patch: `seo`, `excerpt`, `feature_image` (real CDN URL via `leafpad_generate_image`), `og_image`, `tags`, `categories`, `internal_links`, `canonical_url`. Insert internal links into the body where suggested.
+9. **Delegate QA** — Call the `quality-assurance` agent against the enforcement checklist at `skills/brand-voice-enforcement/references/enforcement-checklist.md`. If a critical check fails, revise once and re-run QA. If it fails twice, stop and surface the QA report to the user — do not publish.
+10. **Publish via `leafpad-publisher`** — Resolve `mode`:
+    - Override flag (if present) wins
+    - Otherwise use `${user_config.publish_mode}` (defaulting to `draft`)
 
-   Pass `{ article (full rich-article object with HTML body), mode }` to `leafpad-publisher`. The publisher will attempt all candidate fields and strip-on-reject any unsupported by the user's Leafpad instance.
-10. **Report** — Output the published URL (or draft id), the mode used, the Brand Application Notes, and the `schema_fit` block from `leafpad-publisher`.
+    Pass `{ article (full rich-article object with HTML body), mode }` to `leafpad-publisher`. The publisher attempts all candidate fields and strip-on-rejects any unsupported by the user's Leafpad instance.
+11. **Report** — Output the published URL (or draft id), the mode used, the Brand Application Notes, the citations added, and the `schema_fit` block from `leafpad-publisher`.
 
 ## Output format
 
@@ -65,6 +69,7 @@ Brand Application Notes:
 - Products referenced: [...]
 - Knowledge files applied: [...]   # if any were loaded
 - Leafpad KB facts used: [...]      # from leafpad_get_company_data
+- Citations added: N               # verified outbound links from citation-validator
 
 Article metadata:
 - SEO title / description / keywords

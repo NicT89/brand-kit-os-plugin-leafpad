@@ -1,0 +1,39 @@
+{
+  "brand_kit_id": "your-brand-kit-id-or-remove-this-line",
+  "trusted_sources": [
+    { "name": "TechCrunch", "url": "https://techcrunch.com/feed/", "type": "rss" },
+    { "name": "Stratechery", "url": "https://stratechery.com/feed/", "type": "rss" },
+    { "name": "First Round Review", "url": "https://review.firstround.com/feed.xml", "type": "rss" }
+  ],
+  "authoritative_citations": [
+    { "domain": "gartner.com", "note": "Market sizing and analyst research" },
+    { "domain": "nngroup.com", "note": "UX research, citeable usability stats" },
+    { "domain": "census.gov", "note": "Official demographic data" }
+  ],
+  "seo_keyword_clusters": [
+    {
+      "theme": "Customer retention",
+      "keywords": ["churn reduction", "customer retention strategy", "net revenue retention", "expansion revenue"]
+    },
+    {
+      "theme": "Brand strategy",
+      "keywords": ["brand voice", "brand positioning", "messaging framework", "tone of voice guidelines"]
+    }
+  ],
+  "internal_news_feed_url": "https://yourcompany.com/changelog.rss",
+  "competitor_content_feeds": [
+    { "name": "Competitor A Blog", "url": "https://competitor-a.com/blog/feed" }
+  ],
+  "citation_style_guide": {
+    "anchor_style": "descriptive",
+    "rel": "noopener",
+    "append_sources_block": false,
+    "allow_competitor_links": false
+  },
+  "topic_cadence": {
+    "posts_per_week": 3,
+    "preferred_days": ["monday", "wednesday", "friday"],
+    "preferred_time": "09:00",
+    "timezone": "America/New_York"
+  }
+}

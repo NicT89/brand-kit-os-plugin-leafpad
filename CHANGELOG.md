@@ -1,5 +1,40 @@
 # Changelog
 
+## 1.6.0 — 2026-06-12
+
+Research-driven content planning, citations, scheduling routines, Knowledge Base sync, a health-check command, and a full documentation suite — plus portability beyond Claude Code.
+
+### Research & planning
+
+- **`topic-scout` agent** — researches and proposes ranked, brand-relevant blog topics from five sources: user themes, company updates (Leafpad KB), trusted RSS/news feeds (sources registry), content-gap analysis of existing Leafpad posts, and trending web search. Each idea gets a 0–100 brand-fit score and provenance label.
+- **`/plan-week [--count N] [--start] [--themes]`** — builds an editorial calendar via `topic-scout`, assigns publish slots from your cadence, and saves a calendar file.
+- **`/execute-calendar [--ai-schedule | --draft-now]`** — schedules a planned calendar via Leafpad's AI scheduler, or hand-crafts every post as a draft through the full pipeline.
+- **`topic-sourcing` skill + sources registry** — a user-editable `~/.brand-kit-os-leafpad/registry.json` (RSS feeds, citation domains, keyword clusters, cadence) with JSON Schema and an annotated example. The richer the registry, the better the research.
+
+### Citations & authority
+
+- **`citation-validator` agent** — adds 2–4 verified outbound citations to each article. Every source is WebFetched and confirmed to support its claim before insertion; drops unverifiable candidates transparently. Wired into `/publish-pipeline` and `cowork-digest-publisher`.
+
+### Knowledge Base sync
+
+- **`/sync-brand-to-kb [--sections] [--dry-run]`** — pushes Brand Kit OS context into your Leafpad org's Knowledge Base via Leafpad's REST API, so every Leafpad-AI-generated post is brand-aware. `--dry-run` previews the documents before upload.
+
+### Health & onboarding
+
+- **`/doctor`** — read-only health check: verifies both MCP connections, lists brand kits + Leafpad orgs, checks brand-kit completeness and Leafpad readiness, validates the sources registry, and prints a punch list with concrete next steps.
+- **`docs/getting-started.md`** — end-to-end onboarding from install to first post to recurring calendar, with a command cheat sheet and troubleshooting.
+
+### Routines & portability
+
+- **`docs/routines/`** — `weekly-3-articles.md` and `monthly-editorial-calendar.md` show how to wire `/plan-week` + `/execute-calendar` into Cowork scheduled sessions or Claude Code cron for hands-off content.
+- **`docs/integrations/`** — guides for Claude Desktop, VS Code, Cursor, and any generic MCP client / custom code, making the workflow portable across apps and LLMs.
+- **`schemas/rich-article.schema.json`** — the vendor-neutral intermediate object, codified as JSON Schema for interoperability.
+
+### Pipeline changes
+
+- `/publish-pipeline` now (a) calls `topic-scout` when no topic is given, and (b) runs `citation-validator` between drafting and SEO.
+- `cowork-digest-publisher` now adds citations back to original sources and outputs HTML.
+
 ## 1.5.0 — 2026-06-11
 
 Major correctness pass integrating direct intel from Leafpad MCP's actual capabilities.

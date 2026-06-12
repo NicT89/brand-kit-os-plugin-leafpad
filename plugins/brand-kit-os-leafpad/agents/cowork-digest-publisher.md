@@ -22,7 +22,7 @@ Turns a Cowork scheduled news digest into a published, brand-aligned blog post o
    - `get_brand_kit_audience` (persona targeting for the blog reader)
    - `get_brand_kit_products` (product context to weave in relevance or CTA)
 3. **Plan the article** — Use the blog template from `content-generation.md`: Title → introduction → structured sections → conclusion with CTA. Map which brand rules apply to each section.
-4. **Generate** — Write the article in the brand voice, using preferred terminology, avoiding the negative directory, and hitting the tone dimensions.
+4. **Generate** — Write the article in the brand voice (as HTML), using preferred terminology, avoiding the negative directory, and hitting the tone dimensions. Since digests are news-derived, delegate to the `citation-validator` agent to add 2–4 verified outbound citations back to the original sources — this is especially important for news content's authority.
 5. **Self-validate** — Run the enforcement checklist in `skills/brand-voice-enforcement/references/enforcement-checklist.md`:
    - Voice archetype consistent throughout
    - Tone dimensions match settings
