@@ -1,27 +1,28 @@
 {
   "name": "brand-kit-os-leafpad",
-  "version": "1.6.0",
+  "version": "1.6.1",
+  "displayName": "Brand Kit OS + Leafpad",
   "description": "Brand context, voice enforcement, and Leafpad blog publishing for Claude — powered by Brand Kit OS.",
-  "author": "Nicolas Thatcher",
+  "author": {
+    "name": "Nicolas Thatcher",
+    "url": "https://brandkitos.com"
+  },
   "homepage": "https://brandkitos.com",
   "repository": "https://github.com/NicT89/brand-kit-os-plugin-leafpad",
   "license": "MIT",
-  "capabilities": {
-    "mcp": true,
-    "skills": true,
-    "hooks": true,
-    "agents": true,
-    "commands": true
-  },
+  "keywords": ["brand", "content", "blog", "leafpad", "publishing", "seo"],
   "userConfig": {
     "brand_kit_api_key": {
-      "description": "Your Brand Kit OS API key (get one at https://brandkitos.com/settings → API Keys)",
-      "sensitive": true
+      "type": "string",
+      "title": "Brand Kit OS API Key",
+      "description": "Your Brand Kit OS API key. Get one at https://brandkitos.com/settings → API Keys.",
+      "sensitive": true,
+      "required": true
     },
     "publish_mode": {
-      "description": "Default publishing behavior for /publish-pipeline. 'draft' creates an unpublished post you review in Leafpad; 'published' goes live immediately. For AI-scheduled future posts (Leafpad generates the content at a target date), use the separate /ai-schedule command — Leafpad has no publish-at-date for hand-crafted drafts.",
       "type": "string",
-      "enum": ["draft", "published"],
+      "title": "Default Publish Mode",
+      "description": "Default behavior for /publish-pipeline. Use 'draft' to create an unpublished post you review in Leafpad, or 'published' to go live immediately. For AI-scheduled future posts, use the separate /ai-schedule command. Accepted values: draft, published.",
       "default": "draft"
     }
   }

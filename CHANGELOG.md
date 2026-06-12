@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.6.1 — 2026-06-12
+
+Patch release fixing plugin.json validation per the official Claude Code plugin manifest spec.
+
+- **userConfig entries** now include the required `type` and `title` fields per the spec. Added `required: true` to `brand_kit_api_key`. Removed the unsupported `enum` keyword from `publish_mode` (allowed values moved into the `description`).
+- **Dropped `capabilities`** — not a recognized top-level field; Claude Code warns on it. Component discovery happens via the default directories (`agents/`, `commands/`, `skills/`, `hooks.json`, `.mcp.json`).
+- **`.mcp.json`** reverted to the documented stdio + `mcp-remote` proxy shape (the example shape in the plugin reference). Direct HTTP `url + headers` works in Claude Desktop's own MCP config, but plugin `.mcp.json` is validated against the documented stdio form.
+- **`displayName`** + structured `author` object + `keywords` added for better presentation in the `/plugin` picker.
+
+No behavioral changes to agents, commands, or workflows.
+
 ## 1.6.0 — 2026-06-12
 
 Research-driven content planning, citations, scheduling routines, Knowledge Base sync, a health-check command, and a full documentation suite — plus portability beyond Claude Code.
