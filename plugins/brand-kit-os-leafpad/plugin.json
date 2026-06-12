@@ -1,6 +1,6 @@
 {
   "name": "brand-kit-os-leafpad",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Brand context, voice enforcement, and Leafpad blog publishing for Claude — powered by Brand Kit OS.",
   "author": "Nicolas Thatcher",
   "homepage": "https://brandkitos.com",
@@ -17,6 +17,12 @@
     "brand_kit_api_key": {
       "description": "Your Brand Kit OS API key (get one at https://brandkitos.com/settings → API Keys)",
       "sensitive": true
+    },
+    "publish_mode": {
+      "description": "Default publishing behavior for /publish-pipeline. 'draft' creates an unpublished post you review in Leafpad; 'published' goes live immediately; 'scheduled' uses leafpad_add_scheduled_posts.",
+      "type": "string",
+      "enum": ["draft", "published", "scheduled"],
+      "default": "draft"
     }
   }
 }

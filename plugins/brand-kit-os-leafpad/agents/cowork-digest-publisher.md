@@ -32,8 +32,8 @@ Turns a Cowork scheduled news digest into a published, brand-aligned blog post o
    - Compliance + disclosure observed
    - CTA and length appropriate for a blog post
    If any check fails, revise before publishing.
-6. **Publish to Leafpad** — Call the Leafpad MCP tool to create and publish the post. Use the tool(s) exposed by the `leafpad` MCP server (tool names discovered at connect time). Leafpad posts use this data model: `name` (title), `slug`, `content` (body), `tags` (array), `seo` (title, description, keywords), `published` (boolean). Map the generated article to these fields.
-7. **Report** — Return the published URL plus brand application notes explaining the choices made.
+6. **Publish via `leafpad-publisher`** — Delegate to the `leafpad-publisher` agent with `{ article, mode }`. Use `mode: "published"` for digests by default (the workflow's purpose is to publish), unless `${user_config.publish_mode}` is set to `draft` or `scheduled` — in which case respect it. `leafpad-publisher` handles field mapping (`name`, `slug`, `content`, `tags`, `seo`, `published`) and failure reporting.
+7. **Report** — Return the published URL (from `leafpad-publisher`) plus brand application notes explaining the choices made.
 
 ## MCP tools used
 
@@ -44,7 +44,7 @@ Turns a Cowork scheduled news digest into a published, brand-aligned blog post o
 | `get_brand_kit_governance` | brand-kit-os | Constraints, negative directory, compliance |
 | `get_brand_kit_audience` | brand-kit-os | Persona targeting |
 | `get_brand_kit_products` | brand-kit-os | Product relevance and CTA material |
-| Leafpad post/publish tool | leafpad | Create and publish the article |
+| `leafpad-publisher` agent | — | Field mapping, mode dispatch, and publish to Leafpad |
 
 ## Output format
 
@@ -67,4 +67,4 @@ Brand Application Notes:
 2. Never override governance constraints (blacklisted claims, compliance notes, disclosure policy)
 3. If the digest contains no brand-relevant topic, say so and stop — do not force a fit
 4. Always include brand application notes in the output
-5. Do not publish without a Leafpad MCP tool response confirming success; on failure, return the draft plus the error
+5. Do not publish without a success result from `leafpad-publisher`; on failure, return the draft plus the error it surfaced

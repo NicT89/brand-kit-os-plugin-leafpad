@@ -40,3 +40,5 @@ If `list_brand_kits` returns no results, inform the user:
 2. Layer additional data on demand — don't load the full brand kit unless explicitly needed
 3. For batch requests (e.g., "5 emails for different personas"), generate each variant with persona-specific adaptation while maintaining brand consistency
 4. Include brand application notes with every delivery so the user understands what guidelines shaped the output
+
+To publish the result to Leafpad, run `/brand-kit-os-leafpad:publish-pipeline`.
