@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.5.0 — 2026-06-11
+
+Major correctness pass integrating direct intel from Leafpad MCP's actual capabilities.
+
+### Corrections (current code was wrong)
+
+- **`content` field is HTML, not Markdown** — `content-generation` now outputs HTML; the rich-article schema body field is HTML; `leafpad-publisher` enforces this. Leafpad's `content` field expects HTML.
+- **`leafpad_update_post` supports updating every field including tags** — removed the "tag updates blocked" rule from `leafpad-publisher` and the corresponding "known limitation" note in README. Post-publish corrections are now first-class.
+- **`leafpad_add_scheduled_posts` AI-generates a brand-new post; it does NOT delay-publish a hand-crafted draft.** Removed the `--schedule <iso>` flag from `/publish-pipeline` (it would have malfunctioned). Replaced with a new dedicated `/ai-schedule` command for the actual AI-scheduled flow.
+- **9 Leafpad MCP tools, not 8** — `leafpad_generate_image` was missing from the inventory.
+- **Dropped `scheduled` from `publish_mode` userConfig enum** — only `draft` and `published` are coherent defaults. AI scheduling is per-run via the new command.
+
+### New
+
+- **`/brand-kit-os-leafpad:ai-schedule "<title>" <iso>`** — schedules a future AI-generated post via `leafpad_add_scheduled_posts`. Builds a brand-aware secondary prompt from BKOS expression + governance + audience + products.
+- **`leafpad-ai-scheduler` agent** — backs the new command. Loads brand context, refines the title, composes the secondary prompt, dispatches the call.
+- **`seo-optimizer` now calls `leafpad_generate_image`** — produces a real CDN-hosted feature image URL aligned with `get_brand_kit_expression.visual_style`. Falls back to prompt-only on tool failure.
+- **`content-generation` now researches the topic against Leafpad's Knowledge Base** — calls `leafpad_get_company_data` to pull real org-specific facts before drafting, grounding article claims.
+- **`leafpad_get_post` with `content_format: "markdown"`** added to seo-optimizer's internal-link analysis path.
+- **`LEAFPAD_REQUESTS.md`** at the repo root — captures the 7 Leafpad MCP gaps (publish_at, KB push, Writing Style sync, delete, create_tag, analytics, post-type support) with shape proposals and plugin-side workarounds.
+- **README expanded** to document Leafpad's auto-extracted FAQ schema, markdown delivery for AIO, server-computed structured data fields, and webhook behavior — so users understand what the publish pipeline relies on and what Leafpad provides "for free".
+
+### Removed
+
+- `--schedule <iso>` flag from `/publish-pipeline` (no clean home in Leafpad's API; replaced with `/ai-schedule`)
+- `scheduled` value from `publish_mode` userConfig enum
+- "Tag updates blocked" / "leafpad_update_post cannot modify tags" claims from README and `leafpad-publisher` rules (was incorrect)
+- `reading_time` computation from `seo-optimizer` (Leafpad derives word count and related fields itself)
+- `wordCount`/`articleSection`/`inLanguage`/FAQ computation from the rich-article schema (Leafpad auto-derives on publish)
+
 ## 1.4.2 — 2026-06-11
 
 - **Endpoint change**: Brand Kit OS MCP server moved to `https://www.brandkitos.com/mcp` (was `https://fupwpcqmyykfiuakjxxc.supabase.co/functions/v1/mcp-server`).
