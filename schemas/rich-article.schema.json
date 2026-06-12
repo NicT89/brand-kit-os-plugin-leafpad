@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://brandkitos.com/schemas/rich-article.json",
+  "title": "Rich Article",
+  "description": "Vendor-neutral intermediate object passed between the pipeline agents (content-generation → citation-validator → seo-optimizer → leafpad-publisher). Maps to Leafpad's create_post payload per brand-to-leafpad-mapping.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "slug", "body"],
+  "properties": {
+    "title": { "type": "string", "description": "Post title → Leafpad name" },
+    "slug": { "type": "string", "description": "URL slug; kebab-case derived from title if omitted" },
+    "body": { "type": "string", "description": "Article body as HTML (Leafpad's content field expects HTML)" },
+    "excerpt": { "type": "string", "description": "1–2 sentence summary for index/social; distinct from seo.description" },
+    "tags": { "type": "array", "items": { "type": "string" } },
+    "categories": { "type": "array", "items": { "type": "string" } },
+    "seo": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string", "maxLength": 60 },
+        "description": { "type": "string", "minLength": 140, "maxLength": 160 },
+        "keywords": { "type": "array", "items": { "type": "string" }, "minItems": 4, "maxItems": 8 }
+      }
+    },
+    "feature_image": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": ["string", "null"], "description": "CDN URL from leafpad_generate_image; null if generation failed" },
+        "prompt": { "type": "string", "description": "The generation prompt, for traceability/regeneration" },
+        "alt": { "type": "string", "maxLength": 125 },
+        "caption": { "type": "string" }
+      }
+    },
+    "og_image": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": { "type": "string" },
+        "prompt": { "type": "string" }
+      }
+    },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "id": { "type": "string" }
+      }
+    },
+    "visibility": { "type": "string", "enum": ["public", "members", "paid"] },
+    "internal_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["anchor", "target_slug"],
+        "properties": {
+          "anchor": { "type": "string" },
+          "target_slug": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "citations": {
+      "type": "array",
+      "description": "Verified outbound citations added by citation-validator.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["anchor_text", "url", "verified"],
+        "properties": {
+          "claim": { "type": "string" },
+          "anchor_text": { "type": "string" },
+          "url": { "type": "string", "format": "uri" },
+          "rel": { "type": "string" },
+          "verified": { "type": "boolean", "description": "WebFetch confirmed the source supports the claim" },
+          "source_tier": { "type": "string", "enum": ["registry", "trusted_source", "web"] }
+        }
+      }
+    },
+    "kb_facts_used": {
+      "type": "array",
+      "description": "Facts pulled from Leafpad's Knowledge Base via leafpad_get_company_data.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "fact": { "type": "string" },
+          "source": { "type": "string" }
+        }
+      }
+    },
+    "brand_application_notes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "voice": { "type": "string" },
+        "tone": { "type": "string" },
+        "terminology": { "type": "array", "items": { "type": "string" } },
+        "governance": { "type": "array", "items": { "type": "string" } },
+        "audience_persona": { "type": "string" },
+        "products_referenced": { "type": "array", "items": { "type": "string" } },
+        "knowledge_files_applied": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}
