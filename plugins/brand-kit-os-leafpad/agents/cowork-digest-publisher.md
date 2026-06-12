@@ -32,7 +32,7 @@ Turns a Cowork scheduled news digest into a published, brand-aligned blog post o
    - Compliance + disclosure observed
    - CTA and length appropriate for a blog post
    If any check fails, revise before publishing.
-6. **Publish via `leafpad-publisher`** — Delegate to the `leafpad-publisher` agent with `{ article, mode }`. Use `mode: "published"` for digests by default (the workflow's purpose is to publish), unless `${user_config.publish_mode}` is set to `draft` or `scheduled` — in which case respect it. `leafpad-publisher` handles field mapping (`name`, `slug`, `content`, `tags`, `seo`, `published`) and failure reporting.
+6. **Publish via `leafpad-publisher`** — Delegate to the `leafpad-publisher` agent with `{ article, mode }`. Use `mode: "published"` for digests by default (the workflow's purpose is to publish), unless `${user_config.publish_mode}` is set to `draft` — in which case respect it. `leafpad-publisher` handles field mapping (`name`, `slug`, `content` as HTML, `tags`, `seo`, `published`, `feature_image`, etc.) and failure reporting.
 7. **Report** — Return the published URL (from `leafpad-publisher`) plus brand application notes explaining the choices made.
 
 ## MCP tools used
