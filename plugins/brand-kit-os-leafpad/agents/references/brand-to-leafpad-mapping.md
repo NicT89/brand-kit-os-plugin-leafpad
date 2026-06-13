@@ -1,113 +1,114 @@
 # Brand Kit OS → Leafpad Field Mapping
 
-The canonical mapping from Brand Kit OS data into Leafpad's post payload. Used by `leafpad-publisher`, `seo-optimizer`, and `content-generation` to build the richest possible post.
+The canonical mapping from Brand Kit OS data into Leafpad's post payload. Used by `leafpad-publisher`, `seo-optimizer`, and `content-generation` to build the richest post the Leafpad MCP actually accepts.
+
+> **Calibrated 2026-06-13** against the live Leafpad MCP (`leafpad_create_post` / `leafpad_update_post` JSON schemas + a real draft round-trip, post `brand-drift-new-technical-debt-ai-tools`). The earlier "rich payload + strip-on-reject" model assumed many fields that the tool does not expose. Those have been moved to **Unsupported** below. Treat this file as the source of truth; re-verify if Leafpad ships a schema change.
 
 ## How this is used
 
-1. `content-generation` and `seo-optimizer` build an internal **rich article object** with every field below populated where possible.
-2. `leafpad-publisher` attempts the full payload against `leafpad_create_post`.
-3. If Leafpad rejects an unknown field (error matching `unknown field`, `unexpected property`, `not allowed`, or a 4xx schema error), the publisher strips the offending field and retries — once per unknown field, max 3 retries total.
-4. The publish report lists which fields were **accepted** and which were **stripped**, so the user can confirm the Leafpad instance's actual schema.
+1. `content-generation` drafts the body and `seo-optimizer` builds the SEO block, both as an internal **rich article object** (shape at the end of this doc).
+2. `leafpad-publisher` **projects** that object onto the lean set of fields `leafpad_create_post` actually accepts (see Verified below). It does not send unsupported fields.
+3. Strip-on-reject is retained only as a defensive fallback. In practice the tool schema is `additionalProperties: false`, so the host never even forms a call containing unknown fields — the correct mapping is what keeps publishes clean, not the retry loop.
 
-## Verified Leafpad fields (from `leafpad_create_post`)
+## Verified Leafpad fields — `leafpad_create_post`
 
-These are documented in the plugin README and known to work:
+This is the **complete** accepted field set (the tool schema is closed; nothing else is accepted).
 
 | Leafpad field | Type | Brand Kit OS source | Notes |
 |---|---|---|---|
-| `name` | string | drafted title from `content-generation` | Required |
-| `slug` | string | generated from `name` (kebab-case) | Auto-generated if omitted |
-| `content` | string (markdown) | drafted body from `content-generation` | Required |
-| `tags` | string[] | `seo-optimizer` from `leafpad_list_tags` + drafted body | `leafpad_list_tags` may return `[]` — see README limitation |
-| `seo.title` | string ≤60 | `seo-optimizer` | Leads with primary keyword |
-| `seo.description` | string 140–160 | `seo-optimizer` | One primary keyword, value-statement close |
-| `seo.keywords` | string[] (4–8) | `seo-optimizer` + `get_brand_kit_expression.preferred_terminology` | Never use `negative_directory` terms |
-| `published` | boolean | resolved from `${user_config.publish_mode}` + override flags | `true` only when `mode === "published"` |
+| `organization_slug` | string | resolved via `leafpad_list_organizations` | **Required.** e.g. `brand-kit-os` |
+| `name` | string | drafted title from `content-generation` | **Required.** This is the post title |
+| `slug` | string | kebab-case from `name` | Optional; auto-derived if omitted |
+| `html_content` | string (**HTML**, not markdown) | drafted body, rendered to HTML | There is **no** markdown `content` field and **no** `content_format`. Convert the draft to HTML before sending. Escape literal `&` as `&amp;` inside the body |
+| `post_type` | enum `ARTICLE` \| `FOLDER` | always `ARTICLE` for posts | Default `ARTICLE` |
+| `published` | boolean | resolved from `${user_config.publish_mode}` + override flags | **Defaults to `true`.** For a draft you MUST send `published: false`, or the post goes live |
+| `seo_title` | string ≤60 | `seo-optimizer` | Flat field — **not** nested under a `seo` object |
+| `seo_description` | string 140–160 | `seo-optimizer` | **Plain text.** Do NOT HTML-escape it — a literal `&amp;` here renders as `&amp;` in the meta tag. Use a raw `&` |
+| `seo_keywords` | **comma-separated string** | `seo-optimizer` + `get_brand_kit_expression.preferred_terminology` | e.g. `"brand drift, brand consistency, AI governance"`. Not a JSON array |
+| `tags` | **comma-separated string** of tag names | `seo-optimizer` from `leafpad_list_tags` + draft body | e.g. `"Brand Consistency, AI Governance"`. New names are created automatically; existing names are reused. Pass names, not IDs |
 
-## Candidate Leafpad fields (attempt + strip-on-reject)
+### Verified behaviors (from the live round-trip)
 
-These are commonly supported by blog-MCP servers but **not confirmed** in the README field list. The publisher will attempt them and strip on rejection.
+- **Tags persist and are reusable.** `leafpad_list_tags` returned 27 existing tags and the 4 we reused came back intact on read. The older "tags return `[]`" caveat did **not** reproduce on this instance — verify per instance, but do not assume tags are broken.
+- **`author` is auto-assigned** from the authenticated OAuth identity (we sent nothing; it came back as the account owner's name). It is **not** settable on create. Treat `author_name` as auto-generated.
+- **Body must be HTML.** Markdown sent as `html_content` is stored verbatim, not rendered.
 
-| Leafpad field | Type | Brand Kit OS source | Why we attempt it |
-|---|---|---|---|
-| `excerpt` | string (1–2 sentences) | `seo-optimizer` — derived from intro paragraph | Used for blog index pages and social previews; richer than `seo.description` |
-| `custom_excerpt` | string | same as `excerpt` | Some platforms split SEO desc from excerpt |
-| `feature_image` | string (URL) | `seo-optimizer.feature_image_prompt` + visual brief from `get_brand_kit_expression.visual_style` | If Leafpad auto-generates feature images (known behavior), this is overridden — flag it |
-| `feature_image_alt` | string | derived from title | Accessibility |
-| `feature_image_caption` | string | from `seo-optimizer` | Used by some themes |
-| `og_image` | string (URL) | usually same as `feature_image` | Social card image override |
-| `twitter_image` | string (URL) | usually same as `feature_image` | Twitter card override |
-| `canonical_url` | string (URL) | omitted by default | Set only when republishing existing content |
-| `meta_title` | string | mirrors `seo.title` | Some platforms separate `<title>` from `seo.title` |
-| `meta_description` | string | mirrors `seo.description` | Some platforms separate `<meta>` from `seo.description` |
-| `author_name` | string | `get_brand_kit_personas` default persona name, else brand author | Whose byline shows |
-| `author_id` | string | resolved via `leafpad_list_organizations` if needed | Some platforms require id, not name |
-| `categories` | string[] | `get_brand_kit_expression.content_categories` | Distinct from tags on many platforms |
-| `visibility` | enum (`public` \| `members` \| `paid`) | omitted unless brand kit governance says so | Defaults to whatever Leafpad's default is |
-| `content_format` | enum (`markdown` \| `html` \| `lexical`) | `"markdown"` | Set explicitly to avoid ambiguous parsing |
-| `reading_time` | integer (minutes) | computed from body word count ÷ 220 | Some platforms compute this themselves |
-| `scheduled_at` | string (ISO-8601) | from `--schedule <iso>` flag | Required for `leafpad_add_scheduled_posts` |
-| `published_at` | string (ISO-8601) | omitted unless backdating | Some platforms accept it on create |
+## Unsupported on create — do NOT send
+
+The tool schema does not include these. They are not "candidates"; sending them is a hard error. Listed here so agents stop trying.
+
+`excerpt`, `custom_excerpt`, `feature_image`, `feature_image_alt`, `feature_image_caption`, `og_image`, `twitter_image`, `canonical_url`, `meta_title`, `meta_description`, `author_name`, `author_id`, `categories`, `visibility`, `content_format`, `reading_time`, `published_at`, and any nested `seo { ... }` object.
+
+- **Images** are a separate step, not a create field. Use **`leafpad_generate_image`** to produce a feature/inline image, then embed or attach it. `seo-optimizer`'s image brief feeds that tool, not a `feature_image` field.
+- **Excerpt / categories / reading_time / canonical_url / visibility** have no home on this instance. Keep them in the rich article object for other channels, but the Leafpad projection drops them.
+
+## Update path — `leafpad_update_post` caveats
+
+- **SEO fields are co-required.** Sending `seo_description` alone returns `422 … Required at "seo.title"; Required at "seo.keywords"`. Always resend the full trio (`seo_title` + `seo_description` + `seo_keywords`) together on any SEO edit.
+- **Tags are immutable after creation.** `leafpad_update_post` has no `tags` parameter. To change tags you must recreate the post (matches the documented limitation — now schema-confirmed).
+- Updatable fields: `name`, `slug`, `html_content`, `published`, `seo_title`, `seo_description`, `seo_keywords`.
+
+## Scheduling — `leafpad_add_scheduled_posts`
+
+Used when `mode === "scheduled"`. **Not yet calibrated** in the 2026-06-13 round-trip — confirm its exact `scheduled_at` format (ISO-8601 vs epoch, timezone handling) and accepted field set before relying on it, and record the result here.
 
 ## Brand Kit OS sections consumed (full breadth)
 
-`/publish-pipeline` calls these in parallel to build the article. Each lands in specific Leafpad fields per the mapping above.
+`/publish-pipeline` calls these in parallel to build the article. They feed the **body and SEO**, which then project onto the verified fields above.
 
-| Brand Kit OS tool | Lands in | Used for |
+| Brand Kit OS tool | Feeds | Used for |
 |---|---|---|
 | `get_brand_kit_summary` | (planning only) | Topic-fit scoring against brand mission |
-| `get_brand_kit_core` | `content` (intro + closing CTA) | Mission/promise framing |
-| `get_brand_kit_personality` | `content` (tone calibration) | Traits, values, principles |
-| `get_brand_kit_expression` | `content` (voice), `seo.keywords`, `tags`, `categories`, `feature_image` brief | Voice, terminology, visual style, content categories |
-| `get_brand_kit_governance` | `content` (compliance copy), `tags` (exclusions), disclosure footer | Constraints, negative directory, disclosure policy |
-| `get_brand_kit_audience` | `content` (persona-aware framing), `excerpt` | Persona targeting |
-| `get_brand_kit_products` | `content` (CTAs, product callouts) | Product CTAs and differentiators |
-| `get_brand_kit_personas` | `author_name` (when AI persona is the byline) | Persona-driven authorship |
-| `list_knowledge_files` + `get_knowledge_file` | `content` (style adherence) | Apply long-form style guides and playbooks |
+| `get_brand_kit_core` | `html_content` (intro + closing CTA) | Mission/promise framing, taglines |
+| `get_brand_kit_personality` | `html_content` (tone calibration) | Traits, values, principles, moods |
+| `get_brand_kit_expression` | `html_content` (voice), `seo_keywords`, `tags` | Voice, preferred terminology, content categories, visual style (→ image brief) |
+| `get_brand_kit_governance` | `html_content` (compliance copy + disclosure footer), formatting rules | Writing constraints (no em dashes, max 1 exclamation, `&` for `and`), negative directory, disclosure policy |
+| `get_brand_kit_audience` | `html_content` (persona-aware framing) | Persona targeting |
+| `get_brand_kit_products` | `html_content` (CTAs, product callouts) | Product CTAs and differentiators |
+| `get_brand_kit_personas` | (byline context only) | `author` is auto-set by Leafpad, so persona name informs voice, not the byline field |
+| `list_knowledge_files` + `get_knowledge_file` | `html_content` (style adherence) | Apply long-form style guides and playbooks |
 
-## Rich article intermediate object
+## Rich article intermediate object → Leafpad projection
 
-The shape that `content-generation` + `seo-optimizer` build before `leafpad-publisher` maps it:
+`content-generation` + `seo-optimizer` still build the full rich object (it serves channels beyond Leafpad). `leafpad-publisher` projects only the supported slice.
 
 ```
-{
-  title: string,
-  slug: string,
-  body: string (markdown),
-  excerpt: string,
-  tags: string[],
-  categories: string[],
-  seo: { title, description, keywords[] },
-  feature_image: { url?: string, prompt: string, alt: string, caption?: string },
-  og_image: { url?: string },
-  author: { name?: string, id?: string },
-  visibility: "public" | "members" | "paid",
-  content_format: "markdown",
-  reading_time: number,
-  internal_links: [{ anchor, target_slug, reason }],
-  brand_application_notes: {
-    voice: string,
-    tone: string,
-    terminology: string[],
-    governance: string[],
-    audience_persona: string,
-    products_referenced: string[],
-    knowledge_files_applied: string[]
-  }
+rich_article = {
+  title, slug,
+  body_markdown,            // converted to HTML for html_content
+  excerpt,                  // dropped for Leafpad (kept for social/index)
+  tags: string[],           // joined to a comma string for Leafpad
+  categories: string[],     // dropped for Leafpad
+  seo: { title, description, keywords[] },   // flattened to seo_title/seo_description/seo_keywords
+  feature_image: { prompt, alt, caption },   // routed to leafpad_generate_image, not a create field
+  reading_time,             // dropped for Leafpad
+  internal_links: [...],    // inserted into body before send
+  brand_application_notes: { ... }
+}
+
+leafpad_create_post payload = {
+  organization_slug,
+  name:            rich_article.title,
+  slug:            rich_article.slug,
+  html_content:    toHTML(rich_article.body_markdown),   // with internal links inserted
+  post_type:       "ARTICLE",
+  published:       mode === "published",                  // false for draft/scheduled-staging
+  seo_title:       rich_article.seo.title,
+  seo_description: rich_article.seo.description,           // raw text, no &amp;
+  seo_keywords:    rich_article.seo.keywords.join(", "),
+  tags:            rich_article.tags.join(", ")
 }
 ```
 
-## Verification loop
+## schema_fit reporting
 
-Because some candidate fields may not be supported by the user's Leafpad instance, the publisher reports back:
+`leafpad-publisher` still returns a `schema_fit` block so future schema drift is caught:
 
 ```
-Publish Result:
-  ...
-  schema_fit:
-    accepted: ["name", "slug", "content", "tags", "seo", "published", "excerpt", "feature_image"]
-    stripped: ["canonical_url", "visibility"]   # rejected by Leafpad, retried without
-    auto_generated: ["feature_image"]            # Leafpad ignored our value and generated its own (known behavior)
+schema_fit:
+  accepted: ["organization_slug","name","slug","html_content","post_type","published","seo_title","seo_description","seo_keywords","tags"]
+  stripped: []                       # should stay empty now that the mapping matches the schema
+  auto_generated: ["author"]         # Leafpad sets the byline from the OAuth identity
 ```
 
-Run `/brand-kit-os-leafpad:publish-pipeline <topic> --draft` once after install and inspect this section. Anything in `stripped` is a field your Leafpad instance doesn't support — update this reference doc to move it from "candidate" to "unsupported" so we stop retrying it.
+If anything lands in `stripped`, the Leafpad schema changed — update this file.
