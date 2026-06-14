@@ -6,22 +6,17 @@
   "homepage": "https://brandkitos.com",
   "repository": "https://github.com/NicT89/brand-kit-os-plugin-leafpad",
   "license": "MIT",
-  "capabilities": {
-    "mcp": true,
-    "skills": true,
-    "hooks": true,
-    "agents": true,
-    "commands": true
-  },
   "userConfig": {
     "brand_kit_api_key": {
+      "type": "string",
+      "title": "Brand Kit OS API key",
       "description": "Your Brand Kit OS API key (get one at https://brandkitos.com/settings → API Keys)",
       "sensitive": true
     },
     "publish_mode": {
-      "description": "Default publishing behavior for /publish-pipeline. 'draft' creates an unpublished post you review in Leafpad; 'published' goes live immediately; 'scheduled' uses leafpad_add_scheduled_posts.",
       "type": "string",
-      "enum": ["draft", "published", "scheduled"],
+      "title": "Default publish mode",
+      "description": "Default publishing behavior for /publish-pipeline: 'draft' (unpublished, review in Leafpad), 'published' (live immediately), or 'scheduled' (uses leafpad_add_scheduled_posts). Valid values: draft, published, scheduled. Override per run with --draft / --publish / --schedule.",
       "default": "draft"
     }
   }
