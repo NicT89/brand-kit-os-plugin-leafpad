@@ -1,4 +1,6 @@
-# Claude Desktop Test Protocol — v1.4.0
+# Claude Desktop Test Protocol — v1.4.3
+
+> **Note (calibrated 2026-06-13):** The Leafpad `leafpad_create_post` schema has since been verified against the live MCP. The real accepted fields are `organization_slug`, `name`, `slug`, `html_content` (HTML, not markdown), `post_type`, `published` (defaults `true`), `seo_title`, `seo_description`, `seo_keywords` (comma string), `tags` (comma string). Fields like `excerpt`, `feature_image`, `og_image`, `categories`, `content_format`, `reading_time`, `author_name` are **not** part of the tool and should not be sent — see `plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`. The Phase 5 prompt below is kept as the original schema-discovery exercise; expect those extra fields to be rejected/ignored.
 
 End-to-end test script for the Brand Kit OS + Leafpad plugin, designed to run in **Claude Desktop Chat** with both MCP servers configured. Output captured here drives the v1.5.0 calibration (which Leafpad fields are accepted vs stripped, exact scheduled timestamp format, BKOS section payload shapes).
 

@@ -50,21 +50,17 @@ Example:
 
 ### Brand Kit OS → Leafpad field mapping
 
-The pipeline builds a rich-article object covering every Leafpad field we can populate. The canonical mapping (and how to update it for your Leafpad instance) lives at [`plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`](plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md). Highlights:
+The pipeline builds a rich-article object, then projects it onto the fields `leafpad_create_post` actually accepts (calibrated against the live Leafpad MCP — full detail at [`plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`](plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md)). The verified Leafpad fields:
 
 | Leafpad field | Sourced from |
 |---|---|
-| `name`, `slug`, `content` | drafted by `content-generation` from brand core + personality + expression |
-| `seo.title` / `seo.description` / `seo.keywords` | `seo-optimizer` using `get_brand_kit_expression.preferred_terminology` |
-| `excerpt` | `seo-optimizer` — distinct from SEO desc, used for blog index + social feeds |
-| `feature_image` / `og_image` | `seo-optimizer` — prompt + alt + caption derived from `visual_style` |
-| `tags` | `leafpad_list_tags` + draft body |
-| `categories` | `get_brand_kit_expression.content_categories` |
-| `author_name` | `get_brand_kit_personas` (when an AI persona is the byline) |
-| `reading_time` | computed from body word count |
-| `published` / `scheduled_at` | resolved from `publish_mode` or override flags |
+| `name`, `slug` | drafted by `content-generation` from brand core + personality + expression |
+| `html_content` (HTML, not markdown) | drafted body, rendered to HTML, with internal links inserted |
+| `seo_title` / `seo_description` / `seo_keywords` (comma string) | `seo-optimizer` using `get_brand_kit_expression.preferred_terminology` |
+| `tags` (comma string of names) | `leafpad_list_tags` + draft body; existing names reused, new ones auto-created |
+| `published` | resolved from `publish_mode` or override flags (**defaults to `true`** — drafts send `published: false`) |
 
-Because Leafpad MCP schemas vary by instance, `leafpad-publisher` sends the full payload and automatically strips any unsupported field, reporting back in the `schema_fit` block which fields landed and which were stripped. After your first publish, check `schema_fit.stripped` and update the mapping reference accordingly.
+The body's `author` is auto-set by Leafpad from your account. Feature images are produced via the separate **`leafpad_generate_image`** tool, not a post field. Fields the rich object carries for other channels — `excerpt`, `categories`, `reading_time`, `canonical_url` — are **not** Leafpad post fields and are dropped on publish. `leafpad-publisher` still reports a `schema_fit` block so you can spot any future schema change.
 
 ### Manual install
 
@@ -83,7 +79,9 @@ To use it: paste a Cowork digest and ask Claude to publish it.
 
 ## Available MCP tools
 
-### Brand Kit OS (12 tools)
+### Brand Kit OS (the read tools the pipeline uses)
+
+The live Brand Kit OS MCP server exposes ~48 tools (including write/update tools for every brand section). The publish pipeline uses these read tools:
 
 | Tool | Description |
 |------|-------------|
@@ -100,25 +98,28 @@ To use it: paste a Cowork digest and ask Claude to publish it.
 | `list_knowledge_files` | Knowledge files attached to a brand kit |
 | `get_knowledge_file` | Specific knowledge file metadata |
 
-### Leafpad (8 tools)
+### Leafpad (9 tools)
 
 | Tool | Description |
 |------|-------------|
-| `leafpad_create_post` | Create a blog post (draft or published) |
-| `leafpad_update_post` | Update an existing post (cannot update tags) |
+| `leafpad_create_post` | Create a blog post (draft or published). Body is `html_content` (HTML); `tags`/`seo_keywords` are comma strings; `published` defaults to `true` |
+| `leafpad_update_post` | Update an existing post (no `tags` param — tags are immutable; SEO fields are co-required) |
 | `leafpad_list_posts` | List existing posts for internal linking |
 | `leafpad_get_post` | Read a specific post's content |
 | `leafpad_list_tags` | Get existing tags for reuse |
 | `leafpad_list_organizations` | List available organizations |
 | `leafpad_get_company_data` | Query company knowledge base |
 | `leafpad_add_scheduled_posts` | Schedule posts for future generation |
+| `leafpad_generate_image` | Generate a feature/inline image (images are a separate step, not a post field) |
 
 ## Known Leafpad MCP limitations
 
-- Tags return `[]` in API responses — verify in Leafpad UI
-- Feature images may auto-generate; flag as manual step
+- `leafpad_update_post` cannot modify tags after creation (no `tags` parameter) — recreate the post to change tags
+- When updating SEO, send the full trio (`seo_title` + `seo_description` + `seo_keywords`); sending one alone is rejected
+- `leafpad_create_post` body is HTML (`html_content`) — there is no markdown `content` field
 - No delete endpoint — mistakes require Leafpad UI cleanup
-- `leafpad_update_post` cannot modify tags after creation
+
+> Note: the older "tags return `[]`" behavior did not reproduce on the calibrated instance (2026-06-13) — `leafpad_list_tags` returned the full tag list and tag reuse worked. Verify per instance.
 
 ## License
 

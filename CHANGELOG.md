@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.4.3 — 2026-06-13
+
+- **Fix (blocking): plugin manifest location.** Moved `plugin.json` to `.claude-plugin/plugin.json`. Claude Desktop's "Upload plugin" rejected the previous root-level manifest with `Invalid plugin: missing .claude-plugin/plugin.json`. This is the spec-required location for both direct upload and marketplace install.
+- **Fix: hooks auto-discovery.** Moved `hooks.json` to `hooks/hooks.json` (the convention Claude Code auto-discovers). At the old root path the SessionStart brand-summary hook never fired.
+- **Leafpad schema calibration (verified against the live MCP, 2026-06-13).** Rewrote `agents/references/brand-to-leafpad-mapping.md` and `agents/leafpad-publisher.md` to the **actual** `leafpad_create_post` schema:
+  - Real accepted fields: `organization_slug`, `name`, `slug`, `html_content` (HTML, not markdown), `post_type`, `published`, `seo_title`, `seo_description`, `seo_keywords` (comma string), `tags` (comma string).
+  - `published` defaults to `true` — drafts must send `published: false`.
+  - Removed unsupported "candidate" fields (`excerpt`, `feature_image`, `og_image`, `categories`, `author_name`, `canonical_url`, `visibility`, `content_format`, `reading_time`, nested `seo{}`). Feature images are a separate `leafpad_generate_image` call; `author` is auto-set from the OAuth identity.
+  - `leafpad_update_post`: SEO fields are co-required (send the full `seo_title`/`seo_description`/`seo_keywords` trio); tags are immutable after creation.
+  - Verified live: tag reuse works (the older "tags return `[]`" caveat did not reproduce); SEO description must be raw text (not HTML-escaped).
+- **Manifest hardening (spec audit).** Added the spec-required `type` + `title` to each `userConfig` option (`brand_kit_api_key`, `publish_mode`); removed the undocumented/inert `capabilities` field and the unsupported `enum` key on `publish_mode` (valid values now documented in its description). Confirmed `${user_config.brand_kit_api_key}` substitution in `.mcp.json` headers is valid per the plugin spec (no change needed).
+- **Docs reconciled to the verified schema.** Updated `README.md` (field-mapping table, tool lists incl. `leafpad_generate_image`, known-limitations), `agents/seo-optimizer.md` (which fields actually reach Leafpad), and the test protocol header so they no longer reference unsupported Leafpad fields.
+
 ## 1.4.2 — 2026-06-11
 
 - **Endpoint change**: Brand Kit OS MCP server moved to `https://www.brandkitos.com/mcp` (was `https://fupwpcqmyykfiuakjxxc.supabase.co/functions/v1/mcp-server`).

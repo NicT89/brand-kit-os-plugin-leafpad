@@ -5,7 +5,9 @@ description: Build the full SEO + media metadata block for a drafted article —
 
 # SEO Optimizer Agent
 
-Takes a drafted article and produces every metadata field defined as **verified** or **candidate** in `references/brand-to-leafpad-mapping.md`. The article body is treated as read-only — this agent only emits a patch the caller applies to the rich-article object.
+Takes a drafted article and produces full publish-ready metadata for the **rich-article object**. The article body is treated as read-only — this agent only emits a patch the caller applies to the rich-article object.
+
+> **Leafpad reality (calibrated — see `references/brand-to-leafpad-mapping.md`):** of the fields below, only `seo.title` → `seo_title`, `seo.description` → `seo_description`, `seo.keywords` → `seo_keywords`, and `tags` actually publish to Leafpad. `excerpt`, `categories`, `reading_time`, and `canonical_url` are **not** Leafpad fields (the publisher drops them) — keep producing them only because they feed other channels (social, blog index, RSS). The **feature/og image is generated via the separate `leafpad_generate_image` tool**, not a `feature_image` post field. Produce the image brief so it can drive that tool.
 
 ## When to activate
 
