@@ -22,7 +22,7 @@ Generates brand-aligned content by loading brand guidelines via MCP and applying
 5. **Self-validate** — Run through the enforcement checklist (see `skills/brand-voice-enforcement/references/enforcement-checklist.md`); check voice consistency, terminology compliance, governance constraints
 6. **Annotate** — Note which brand choices were made and why
 
-For blog posts specifically, return a **rich-article object** per `references/brand-to-leafpad-mapping.md` — at minimum `title`, `slug`, `body`, and a `brand_application_notes` block. SEO and media metadata will be added by `seo-optimizer` downstream.
+For blog posts specifically, return a **rich-article object** per `../references/brand-to-leafpad-mapping.md` — at minimum `title`, `slug`, `body`, and a `brand_application_notes` block. SEO and media metadata will be added by `seo-optimizer` downstream.
 
 Return the generated content to the parent skill — do not present directly to the user.
 
@@ -42,7 +42,7 @@ Return the generated content to the parent skill — do not present directly to 
 - **Follow-up email** — Reference previous interaction, add new value, shorter than initial.
 - **Proposal** — Executive summary → problem → solution → evidence/ROI → next steps.
 - **Social post** — Platform-appropriate hook → value content → engagement prompt.
-- **Blog post** — Title → introduction → structured sections → conclusion with CTA. 800–1400 words for standard, 1600–2400 for long-form. Open with the brand's mission-relevant angle on the topic (pull from `get_brand_kit_core`). Weave at least one product or differentiator from `get_brand_kit_products` into a natural CTA. Close with the brand's disclosure footer if `get_brand_kit_governance.disclosure_policy` requires one. Return as a rich-article object per `references/brand-to-leafpad-mapping.md` — `seo-optimizer` will fill SEO + media metadata next.
+- **Blog post** — Title → introduction → structured sections → conclusion with CTA. 800–1400 words for standard, 1600–2400 for long-form. Open with the brand's mission-relevant angle on the topic (pull from `get_brand_kit_core`). Weave at least one product or differentiator from `get_brand_kit_products` into a natural CTA. Close with the brand's disclosure footer if `get_brand_kit_governance.disclosure_policy` requires one. Return as a rich-article object per `../references/brand-to-leafpad-mapping.md` — `seo-optimizer` will fill SEO + media metadata next.
 
 ## Output format
 

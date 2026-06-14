@@ -5,7 +5,7 @@ description: Publish a finalized article to Leafpad in draft, published, or sche
 
 # Leafpad Publisher Agent
 
-Takes a finalized rich-article object (the shape defined in `references/brand-to-leafpad-mapping.md`) and publishes it to Leafpad. Encapsulates field mapping, mode dispatch (`draft` / `published` / `scheduled`), strip-on-reject schema adaptation, and failure handling.
+Takes a finalized rich-article object (the shape defined in `../references/brand-to-leafpad-mapping.md`) and publishes it to Leafpad. Encapsulates field mapping, mode dispatch (`draft` / `published` / `scheduled`), strip-on-reject schema adaptation, and failure handling.
 
 ## When to activate
 
@@ -15,7 +15,7 @@ Takes a finalized rich-article object (the shape defined in `references/brand-to
 
 ## Inputs
 
-- `article` — rich-article object per `references/brand-to-leafpad-mapping.md`
+- `article` — rich-article object per `../references/brand-to-leafpad-mapping.md`
 - `mode` — `draft` | `published` | `scheduled`. Default is `${user_config.publish_mode}`, falling back to `draft`.
 - `scheduled_at` — required only when `mode === "scheduled"`; ISO-8601.
 - `organization_id` — optional. Resolved via `leafpad_list_organizations` if needed.
@@ -26,7 +26,7 @@ Takes a finalized rich-article object (the shape defined in `references/brand-to
 
 2. **Resolve organization** — If `organization_id` not provided, call `leafpad_list_organizations`. If there's exactly one, use it. If multiple, ask the user once.
 
-3. **Project to the verified Leafpad payload** — `leafpad_create_post` accepts a closed, lean field set (calibrated 2026-06-13; full detail in `references/brand-to-leafpad-mapping.md`). Build exactly this payload — do not add fields the schema does not expose:
+3. **Project to the verified Leafpad payload** — `leafpad_create_post` accepts a closed, lean field set (calibrated 2026-06-13; full detail in `../references/brand-to-leafpad-mapping.md`). Build exactly this payload — do not add fields the schema does not expose:
    - `organization_slug` ← resolved org
    - `name` ← `article.title` (**required**)
    - `slug` ← `article.slug` (else kebab-case from title)
@@ -85,7 +85,7 @@ Publish Result:
   scheduled_at: <iso>              # when mode=scheduled
   schema_fit:
     accepted: ["organization_slug", "name", "slug", "html_content", "post_type", "published", "seo_title", "seo_description", "seo_keywords", "tags"]
-    stripped: []                                 # should stay empty — mapping matches the verified schema. Anything here means Leafpad changed its schema; update references/brand-to-leafpad-mapping.md
+    stripped: []                                 # should stay empty — mapping matches the verified schema. Anything here means Leafpad changed its schema; update ../references/brand-to-leafpad-mapping.md
     auto_generated: ["author"]                   # Leafpad sets the byline from the OAuth identity
   caveats:
     - "Tags could not be verified — leafpad_list_tags returned []"
@@ -99,5 +99,5 @@ Publish Result:
 3. **When editing SEO via `leafpad_update_post`, send the full trio** (`seo_title` + `seo_description` + `seo_keywords`) together. Sending `seo_description` alone returns `422 … Required at "seo.title"; Required at "seo.keywords"`.
 4. **Strip-on-reject is a fallback, not the plan** — the verified mapping should land cleanly. Keep it bounded at max 3 retries; never silently drop required fields (`name`, `html_content`)
 5. On non-schema Leafpad MCP failure (auth, network, 5xx), return the article + error and stop — do not retry blindly
-6. Always include the `mode` and full `schema_fit` block in the output. This is how the user discovers their Leafpad schema and updates `references/brand-to-leafpad-mapping.md`
+6. Always include the `mode` and full `schema_fit` block in the output. This is how the user discovers their Leafpad schema and updates `../references/brand-to-leafpad-mapping.md`
 7. Never fabricate a Leafpad URL — only return URLs that came back from the MCP response

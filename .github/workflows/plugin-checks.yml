@@ -1,0 +1,35 @@
+name: Plugin checks
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  validate:
+    name: Validate manifests (strict)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate marketplace and plugin manifests (strict)
+        run: |
+          claude plugin validate . --strict
+          claude plugin validate plugins/brand-kit-os-leafpad --strict
+
+  version-bump:
+    name: Require version bump on plugin changes
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check version bump + manifest version consistency
+        run: python3 .github/scripts/check_version_bump.py
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
