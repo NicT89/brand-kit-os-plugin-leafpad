@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "Brand Kit OS plugins for Claude — brand context, voice enforcement, and Leafpad blog publishing.",
-    "version": "1.4.3"
+    "version": "1.4.4"
   },
   "plugins": [
     {
       "name": "brand-kit-os-leafpad",
       "source": "./plugins/brand-kit-os-leafpad",
       "description": "Connect Brand Kit OS brand context + Leafpad blog publishing to Claude. Includes skills, agents, commands, and two MCP servers.",
-      "version": "1.4.3"
+      "version": "1.4.4"
     }
   ]
 }

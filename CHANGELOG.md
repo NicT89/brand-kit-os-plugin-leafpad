@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.4 — 2026-06-14
+
+- **Fix (blocking marketplace install): invalid `author`.** `plugin.json` had `author` as a string; the plugin schema requires an object. `claude plugin validate` failed on it, so a marketplace install loaded no components/data. Changed to `{ "name", "url" }`. Both plugin and marketplace manifests now pass `claude plugin validate --strict`.
+- **Fix: reference doc parsed as an agent.** Moved `agents/references/brand-to-leafpad-mapping.md` to `references/brand-to-leafpad-mapping.md` (plugin root) so it is no longer scanned as a frontmatter-less agent. Updated the relative links in `content-generation`, `seo-optimizer`, and `leafpad-publisher` to `../references/…`.
+- **CI: plugin checks.** Added `.github/workflows/plugin-checks.yml` — runs `claude plugin validate --strict` on the marketplace and plugin, and (on PRs) fails if any plugin file changed without a version bump. Enable it as a required check in branch protection to enforce the bump rule.
+
 ## 1.4.3 — 2026-06-13
 
 - **Fix (blocking): plugin manifest location.** Moved `plugin.json` to `.claude-plugin/plugin.json`. Claude Desktop's "Upload plugin" rejected the previous root-level manifest with `Invalid plugin: missing .claude-plugin/plugin.json`. This is the spec-required location for both direct upload and marketplace install.

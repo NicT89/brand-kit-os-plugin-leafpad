@@ -7,7 +7,7 @@ description: Build the full SEO + media metadata block for a drafted article —
 
 Takes a drafted article and produces full publish-ready metadata for the **rich-article object**. The article body is treated as read-only — this agent only emits a patch the caller applies to the rich-article object.
 
-> **Leafpad reality (calibrated — see `references/brand-to-leafpad-mapping.md`):** of the fields below, only `seo.title` → `seo_title`, `seo.description` → `seo_description`, `seo.keywords` → `seo_keywords`, and `tags` actually publish to Leafpad. `excerpt`, `categories`, `reading_time`, and `canonical_url` are **not** Leafpad fields (the publisher drops them) — keep producing them only because they feed other channels (social, blog index, RSS). The **feature/og image is generated via the separate `leafpad_generate_image` tool**, not a `feature_image` post field. Produce the image brief so it can drive that tool.
+> **Leafpad reality (calibrated — see `../references/brand-to-leafpad-mapping.md`):** of the fields below, only `seo.title` → `seo_title`, `seo.description` → `seo_description`, `seo.keywords` → `seo_keywords`, and `tags` actually publish to Leafpad. `excerpt`, `categories`, `reading_time`, and `canonical_url` are **not** Leafpad fields (the publisher drops them) — keep producing them only because they feed other channels (social, blog index, RSS). The **feature/og image is generated via the separate `leafpad_generate_image` tool**, not a `feature_image` post field. Produce the image brief so it can drive that tool.
 
 ## When to activate
 
@@ -104,4 +104,4 @@ SEO Patch:
 5. Keep `seo.keywords` between 4 and 8 — more dilutes signal, fewer leaves gaps
 6. Internal-link suggestions must be real slugs from `leafpad_list_posts` — never fabricate URLs
 7. Always emit a `feature_image.prompt` even when Leafpad will auto-generate — the user may want manual upload
-8. Reference `references/brand-to-leafpad-mapping.md` for the canonical field list; if you find a useful field not in the mapping, propose adding it to that reference rather than emitting it ad-hoc
+8. Reference `../references/brand-to-leafpad-mapping.md` for the canonical field list; if you find a useful field not in the mapping, propose adding it to that reference rather than emitting it ad-hoc
