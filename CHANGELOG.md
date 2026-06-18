@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.6.1 — 2026-06-16
+
+Reconciles the parallel v1.6.x line onto the verified v1.4.5 foundation (resolves PR #8).
+
+- **Kept main's verified foundation** — `.claude-plugin/plugin.json` manifest location, `hooks/hooks.json`, **direct HTTP `.mcp.json` transport** (`url` + `headers`), `references/brand-to-leafpad-mapping.md`, and the CI `--strict` + version-bump checks. The earlier 1.6.1 draft had reverted `.mcp.json` to the stdio `mcp-remote` proxy on the assumption that HTTP fails plugin validation; that is not the case — the HTTP transport passes `claude plugin validate --strict` and is confirmed working in Claude Desktop CoWork & Chat.
+- **userConfig** keeps the spec-required `type` + `title`; `capabilities` and the unsupported `enum` stay removed.
+- Retains the v1.4.5 audit gate, on-brand image generation, and corrected scheduled-mode behavior.
+- Both plugin and marketplace manifests pass `claude plugin validate --strict`.
+
+## 1.6.0 — 2026-06-16
+
+Research-driven planning, citations, AI scheduling, Knowledge Base sync, a health check, docs, and portability — all additive on top of the existing pipeline.
+
+- **`topic-scout` agent** — proposes ranked, brand-relevant topics from user themes, company updates, trusted feeds, content-gap analysis, and trending search (0–100 brand-fit score + provenance).
+- **`citation-validator` agent** — adds 2–4 outbound citations, each WebFetched and confirmed to support its claim before insertion; drops unverifiable candidates.
+- **`leafpad-ai-scheduler` agent** + **`/ai-schedule`** — hands Leafpad a brand-aware brief (title + voice/governance/audience prompt) to generate a future post via `leafpad_add_scheduled_posts`.
+- **`/plan-week`** + **`/execute-calendar`** — build an editorial calendar via `topic-scout` and schedule or hand-craft it.
+- **`/sync-brand-to-kb`** — pushes Brand Kit OS context into the Leafpad org's Knowledge Base so all Leafpad-AI posts are brand-aware.
+- **`/doctor`** — read-only health check of MCP connections, brand-kit completeness, Leafpad readiness, and the sources registry.
+- **`topic-sourcing` skill** + a user-editable sources registry (`registry.json` + JSON Schema).
+- **Docs** — `docs/getting-started.md`, `docs/routines/`, `docs/integrations/` (Claude Desktop, VS Code, Cursor, generic MCP), `LEAFPAD_REQUESTS.md`, and `schemas/rich-article.schema.json` for portability beyond Claude Code.
+
 ## 1.4.5 — 2026-06-16
 
 - **Hard SEO/structure audit gate (blog posts).** `quality-assurance` now runs a measured, blocking pre-publish audit: body **≥ 800 words (target 900+)**, **title 8–12 words**, an embedded image, external sources cited, and 2–4 internal links. Body under 800 or a title outside 8–12 words is a Critical fail that blocks publish. Codified in the enforcement checklist; `content-generation` writes to these targets.
