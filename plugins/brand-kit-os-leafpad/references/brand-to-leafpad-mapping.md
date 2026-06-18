@@ -48,9 +48,35 @@ The tool schema does not include these. They are not "candidates"; sending them 
 - **Tags are immutable after creation.** `leafpad_update_post` has no `tags` parameter. To change tags you must recreate the post (matches the documented limitation — now schema-confirmed).
 - Updatable fields: `name`, `slug`, `html_content`, `published`, `seo_title`, `seo_description`, `seo_keywords`.
 
-## Scheduling — `leafpad_add_scheduled_posts`
+## Scheduling — `leafpad_add_scheduled_posts` (calibrated 2026-06-15)
 
-Used when `mode === "scheduled"`. **Not yet calibrated** in the 2026-06-13 round-trip — confirm its exact `scheduled_at` format (ISO-8601 vs epoch, timezone handling) and accepted field set before relying on it, and record the result here.
+**Scheduling is a different model from drafting.** You do **not** send a finished article with a publish timestamp. You queue a topic and Leafpad **generates** the post on the date.
+
+```
+leafpad_add_scheduled_posts({
+  organization_slug,
+  posts: [
+    { title,            // the topic / keyword Leafpad writes about (required)
+      date,             // ISO-8601 in UTC with Z, e.g. "2026-06-23T14:00:00Z" (required, verified)
+      prompt }          // optional brand-voice brief; encode voice + word-count/title rules here
+  ]
+})
+```
+
+- **Verified:** `date: "2026-06-23T14:00:00Z"` was accepted and stored as `2026-06-23T14:00:00.000Z`.
+- The generated post lands as a **draft** for manual review/publish (matches `publish_mode=draft`).
+- No "list scheduled queue" tool exists; a scheduled item is not visible via `leafpad_get_post` until it generates.
+
+## Images — `leafpad_generate_image`
+
+Images are a separate call, not a post field.
+
+```
+leafpad_generate_image({ organization_slug, prompt }) -> public CDN URL
+```
+
+- Leafpad applies the **org's brand style + color palette** automatically, so the prompt only needs subject/style/mood.
+- There is no featured-image field on `leafpad_create_post`; embed the returned URL as an `<img>` in `html_content` (it becomes an image block in Leafpad's editor).
 
 ## Brand Kit OS sections consumed (full breadth)
 

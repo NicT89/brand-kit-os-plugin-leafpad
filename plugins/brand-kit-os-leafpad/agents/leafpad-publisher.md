@@ -15,14 +15,15 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 
 ## Inputs
 
-- `article` — rich-article object per `../references/brand-to-leafpad-mapping.md`
+- `article` — rich-article object per `../references/brand-to-leafpad-mapping.md` (used for `draft`/`published`)
 - `mode` — `draft` | `published` | `scheduled`. Default is `${user_config.publish_mode}`, falling back to `draft`.
-- `scheduled_at` — required only when `mode === "scheduled"`; ISO-8601.
-- `organization_id` — optional. Resolved via `leafpad_list_organizations` if needed.
+- `image_url` — optional. CDN URL from `leafpad_generate_image`, embedded in the body as an `<img>`.
+- For `scheduled` mode only: `schedule = { title, date (ISO-8601 UTC), prompt }` — a topic, a future date, and a brand-voice generation prompt. **Not** a finished article.
+- `organization_slug` — optional. Resolved via `leafpad_list_organizations` if needed.
 
 ## Workflow
 
-1. **Validate inputs** — Ensure `article.title`, `article.body`, and (when scheduled) `scheduled_at` are present. If a required field is missing, return an error without calling Leafpad.
+1. **Validate inputs** — For `draft`/`published`, ensure `article.title` and `article.body` are present. For `scheduled`, ensure `schedule.title` and `schedule.date` are present. If a required field is missing, return an error without calling Leafpad.
 
 2. **Resolve organization** — If `organization_id` not provided, call `leafpad_list_organizations`. If there's exactly one, use it. If multiple, ask the user once.
 
@@ -30,7 +31,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
    - `organization_slug` ← resolved org
    - `name` ← `article.title` (**required**)
    - `slug` ← `article.slug` (else kebab-case from title)
-   - `html_content` ← `toHTML(article.body)` with internal links inserted (**HTML, not markdown** — there is no `content`/`content_format` field). Escape literal `&` as `&amp;` in the body
+   - `html_content` ← `toHTML(article.body)` with internal links inserted and, if `image_url` is present, an `<img src="image_url" alt="…">` near the top (**HTML, not markdown** — there is no `content`/`content_format` field; there is no separate featured-image field, so the image lives in the body). Escape literal `&` as `&amp;` in the body
    - `post_type` ← `"ARTICLE"`
    - `published` ← `mode === "published"` (**defaults to `true` if omitted — always send `false` for draft/scheduled staging**)
    - `seo_title` ← `article.seo.title` (flat field, not nested)
@@ -43,7 +44,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 4. **Dispatch by mode**:
    - `draft` → `leafpad_create_post` with `published: false`
    - `published` → `leafpad_create_post` with `published: true`
-   - `scheduled` → `leafpad_add_scheduled_posts` with `scheduled_at` (format not yet calibrated — verify before relying on it)
+   - `scheduled` → `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title: schedule.title, date: schedule.date, prompt: schedule.prompt }]`. **`date` is ISO-8601 in UTC with `Z`** (verified accepted, e.g. `2026-06-23T14:00:00Z`). Leafpad **generates** the post on that date from the title + prompt — no `html_content`/`seo`/`tags` are sent in this mode. Encode the brand voice rules and the word-count/title rules into `schedule.prompt`.
 
 5. **Strip-on-reject retry** — If the Leafpad MCP error message matches any of:
    - `unknown field`
@@ -60,7 +61,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 
    Track every stripped field in `schema_fit.stripped` for the report.
 
-6. **Detect auto-generation** — If the response succeeds but a candidate field came back with a different value than what was sent (notably `feature_image`, which Leafpad may auto-generate per the documented limitation), record it in `schema_fit.auto_generated`.
+6. **Detect auto-generation** — If the response succeeds but a field came back different from what was sent (notably `author`, which Leafpad sets from the OAuth identity), record it in `schema_fit.auto_generated`.
 
 7. **Failure handling (non-schema errors)** — On any Leafpad MCP error that doesn't match a schema-reject pattern (auth, network, server), return the full article + error and **do not retry**. The caller decides whether to retry, edit, or escalate.
 
@@ -70,8 +71,9 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 
 | Tool | Server | Purpose |
 |------|--------|---------|
-| `leafpad_create_post` | leafpad | Create draft or live post |
-| `leafpad_add_scheduled_posts` | leafpad | Schedule a post for future publication |
+| `leafpad_create_post` | leafpad | Create draft or live post (`draft`/`published` modes) |
+| `leafpad_add_scheduled_posts` | leafpad | Queue a topic for Leafpad to generate on a future date (`scheduled` mode) |
+| `leafpad_generate_image` | leafpad | (Upstream) generate the on-brand feature image; its URL is passed in as `image_url` |
 | `leafpad_list_organizations` | leafpad | Resolve organization when ambiguous |
 
 ## Output format
@@ -80,9 +82,9 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 Publish Result:
   status: success | error
   mode: draft | published | scheduled
-  url: https://...                 # when status=success
-  post_id: ...                     # when status=success
-  scheduled_at: <iso>              # when mode=scheduled
+  url: https://...                 # when status=success (draft/published)
+  post_id: ...                     # when status=success (draft/published)
+  scheduled: { id, title, date }   # when mode=scheduled (Leafpad will generate it on date)
   schema_fit:
     accepted: ["organization_slug", "name", "slug", "html_content", "post_type", "published", "seo_title", "seo_description", "seo_keywords", "tags"]
     stripped: []                                 # should stay empty — mapping matches the verified schema. Anything here means Leafpad changed its schema; update ../references/brand-to-leafpad-mapping.md

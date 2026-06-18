@@ -42,7 +42,12 @@ Return the generated content to the parent skill — do not present directly to 
 - **Follow-up email** — Reference previous interaction, add new value, shorter than initial.
 - **Proposal** — Executive summary → problem → solution → evidence/ROI → next steps.
 - **Social post** — Platform-appropriate hook → value content → engagement prompt.
-- **Blog post** — Title → introduction → structured sections → conclusion with CTA. 800–1400 words for standard, 1600–2400 for long-form. Open with the brand's mission-relevant angle on the topic (pull from `get_brand_kit_core`). Weave at least one product or differentiator from `get_brand_kit_products` into a natural CTA. Close with the brand's disclosure footer if `get_brand_kit_governance.disclosure_policy` requires one. Return as a rich-article object per `../references/brand-to-leafpad-mapping.md` — `seo-optimizer` will fill SEO + media metadata next.
+- **Blog post** — Title → introduction → structured sections → conclusion with CTA.
+  - **Title: exactly 8–12 words** (hard rule). Count before returning; revise if outside the range.
+  - **Body: minimum 800 words, target 900+** for standard, 1600–2400 for long-form. Under 800 fails QA — write to the target, do not pad with fluff.
+  - Open with the brand's mission-relevant angle on the topic (pull from `get_brand_kit_core`). Weave at least one product or differentiator from `get_brand_kit_products` into a natural CTA. Close with the brand's disclosure footer if `get_brand_kit_governance.disclosure_policy` requires one.
+  - **If research findings are provided** (from the pipeline's research step), ground claims in them and cite credible **external** sources as links (2+ where the article makes factual/data/trend claims), in addition to internal links.
+  - Return as a rich-article object per `../references/brand-to-leafpad-mapping.md` — `seo-optimizer` adds SEO metadata + the image brief next.
 
 ## Output format
 

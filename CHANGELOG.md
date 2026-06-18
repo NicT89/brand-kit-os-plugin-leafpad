@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.4.5 — 2026-06-16
+
+- **Hard SEO/structure audit gate (blog posts).** `quality-assurance` now runs a measured, blocking pre-publish audit: body **≥ 800 words (target 900+)**, **title 8–12 words**, an embedded image, external sources cited, and 2–4 internal links. Body under 800 or a title outside 8–12 words is a Critical fail that blocks publish. Codified in the enforcement checklist; `content-generation` writes to these targets.
+- **On-brand images.** The pipeline now generates a feature image via `leafpad_generate_image` (which applies the org's brand palette) from `seo-optimizer`'s image prompt and embeds it in the body. (Note: `leafpad_create_post` has no featured-image field, so the image lives in the body.)
+- **Web research step.** `/publish-pipeline` step 1 now gathers 3–5 credible external sources (Firecrawl `firecrawl_search` when available, else built-in web search) and cites them as external links. Never fabricates sources.
+- **Scheduled mode corrected.** `leafpad-publisher`, the mapping reference, and `/publish-pipeline` now use the real `leafpad_add_scheduled_posts` shape — `posts: [{ title, date (ISO-8601 UTC), prompt }]` for Leafpad to **generate** on the date — instead of a finished article + nonexistent `scheduled_at`. Verified format: `2026-06-23T14:00:00Z`.
+
 ## 1.4.4 — 2026-06-14
 
 - **Fix (blocking marketplace install): invalid `author`.** `plugin.json` had `author` as a string; the plugin schema requires an object. `claude plugin validate` failed on it, so a marketplace install loaded no components/data. Changed to `{ "name", "url" }`. Both plugin and marketplace manifests now pass `claude plugin validate --strict`.
