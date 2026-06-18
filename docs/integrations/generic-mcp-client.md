@@ -58,7 +58,7 @@ The intermediate object passed between steps is defined in [`schemas/rich-articl
 
 ## Field mapping
 
-How brand data maps to Leafpad fields is documented in [`plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`](../../plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md). Remember: Leafpad's `content` is **HTML**, and it auto-derives `wordCount`/`articleSection`/`inLanguage`/FAQ schema on publish (don't send those).
+How brand data maps to Leafpad fields is documented in [`plugins/brand-kit-os-leafpad/references/brand-to-leafpad-mapping.md`](../../plugins/brand-kit-os-leafpad/references/brand-to-leafpad-mapping.md). Remember: Leafpad's `content` is **HTML**, and it auto-derives `wordCount`/`articleSection`/`inLanguage`/FAQ schema on publish (don't send those).
 
 ## Model choice
 

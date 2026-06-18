@@ -1,80 +1,52 @@
 # Changelog
 
-## 1.6.1 — 2026-06-12
+## 1.6.1 — 2026-06-16
 
-Patch release fixing plugin.json validation per the official Claude Code plugin manifest spec.
+Reconciles the parallel v1.6.x line onto the verified v1.4.5 foundation (resolves PR #8).
 
-- **userConfig entries** now include the required `type` and `title` fields per the spec. Added `required: true` to `brand_kit_api_key`. Removed the unsupported `enum` keyword from `publish_mode` (allowed values moved into the `description`).
-- **Dropped `capabilities`** — not a recognized top-level field; Claude Code warns on it. Component discovery happens via the default directories (`agents/`, `commands/`, `skills/`, `hooks.json`, `.mcp.json`).
-- **`.mcp.json`** reverted to the documented stdio + `mcp-remote` proxy shape (the example shape in the plugin reference). Direct HTTP `url + headers` works in Claude Desktop's own MCP config, but plugin `.mcp.json` is validated against the documented stdio form.
-- **`displayName`** + structured `author` object + `keywords` added for better presentation in the `/plugin` picker.
+- **Kept main's verified foundation** — `.claude-plugin/plugin.json` manifest location, `hooks/hooks.json`, **direct HTTP `.mcp.json` transport** (`url` + `headers`), `references/brand-to-leafpad-mapping.md`, and the CI `--strict` + version-bump checks. The earlier 1.6.1 draft had reverted `.mcp.json` to the stdio `mcp-remote` proxy on the assumption that HTTP fails plugin validation; that is not the case — the HTTP transport passes `claude plugin validate --strict` and is confirmed working in Claude Desktop CoWork & Chat.
+- **userConfig** keeps the spec-required `type` + `title`; `capabilities` and the unsupported `enum` stay removed.
+- Retains the v1.4.5 audit gate, on-brand image generation, and corrected scheduled-mode behavior.
+- Both plugin and marketplace manifests pass `claude plugin validate --strict`.
 
-No behavioral changes to agents, commands, or workflows.
+## 1.6.0 — 2026-06-16
 
-## 1.6.0 — 2026-06-12
+Research-driven planning, citations, AI scheduling, Knowledge Base sync, a health check, docs, and portability — all additive on top of the existing pipeline.
 
-Research-driven content planning, citations, scheduling routines, Knowledge Base sync, a health-check command, and a full documentation suite — plus portability beyond Claude Code.
+- **`topic-scout` agent** — proposes ranked, brand-relevant topics from user themes, company updates, trusted feeds, content-gap analysis, and trending search (0–100 brand-fit score + provenance).
+- **`citation-validator` agent** — adds 2–4 outbound citations, each WebFetched and confirmed to support its claim before insertion; drops unverifiable candidates.
+- **`leafpad-ai-scheduler` agent** + **`/ai-schedule`** — hands Leafpad a brand-aware brief (title + voice/governance/audience prompt) to generate a future post via `leafpad_add_scheduled_posts`.
+- **`/plan-week`** + **`/execute-calendar`** — build an editorial calendar via `topic-scout` and schedule or hand-craft it.
+- **`/sync-brand-to-kb`** — pushes Brand Kit OS context into the Leafpad org's Knowledge Base so all Leafpad-AI posts are brand-aware.
+- **`/doctor`** — read-only health check of MCP connections, brand-kit completeness, Leafpad readiness, and the sources registry.
+- **`topic-sourcing` skill** + a user-editable sources registry (`registry.json` + JSON Schema).
+- **Docs** — `docs/getting-started.md`, `docs/routines/`, `docs/integrations/` (Claude Desktop, VS Code, Cursor, generic MCP), `LEAFPAD_REQUESTS.md`, and `schemas/rich-article.schema.json` for portability beyond Claude Code.
 
-### Research & planning
+## 1.4.5 — 2026-06-16
 
-- **`topic-scout` agent** — researches and proposes ranked, brand-relevant blog topics from five sources: user themes, company updates (Leafpad KB), trusted RSS/news feeds (sources registry), content-gap analysis of existing Leafpad posts, and trending web search. Each idea gets a 0–100 brand-fit score and provenance label.
-- **`/plan-week [--count N] [--start] [--themes]`** — builds an editorial calendar via `topic-scout`, assigns publish slots from your cadence, and saves a calendar file.
-- **`/execute-calendar [--ai-schedule | --draft-now]`** — schedules a planned calendar via Leafpad's AI scheduler, or hand-crafts every post as a draft through the full pipeline.
-- **`topic-sourcing` skill + sources registry** — a user-editable `~/.brand-kit-os-leafpad/registry.json` (RSS feeds, citation domains, keyword clusters, cadence) with JSON Schema and an annotated example. The richer the registry, the better the research.
+- **Hard SEO/structure audit gate (blog posts).** `quality-assurance` now runs a measured, blocking pre-publish audit: body **≥ 800 words (target 900+)**, **title 8–12 words**, an embedded image, external sources cited, and 2–4 internal links. Body under 800 or a title outside 8–12 words is a Critical fail that blocks publish. Codified in the enforcement checklist; `content-generation` writes to these targets.
+- **On-brand images.** The pipeline now generates a feature image via `leafpad_generate_image` (which applies the org's brand palette) from `seo-optimizer`'s image prompt and embeds it in the body. (Note: `leafpad_create_post` has no featured-image field, so the image lives in the body.)
+- **Web research step.** `/publish-pipeline` step 1 now gathers 3–5 credible external sources (Firecrawl `firecrawl_search` when available, else built-in web search) and cites them as external links. Never fabricates sources.
+- **Scheduled mode corrected.** `leafpad-publisher`, the mapping reference, and `/publish-pipeline` now use the real `leafpad_add_scheduled_posts` shape — `posts: [{ title, date (ISO-8601 UTC), prompt }]` for Leafpad to **generate** on the date — instead of a finished article + nonexistent `scheduled_at`. Verified format: `2026-06-23T14:00:00Z`.
 
-### Citations & authority
+## 1.4.4 — 2026-06-14
 
-- **`citation-validator` agent** — adds 2–4 verified outbound citations to each article. Every source is WebFetched and confirmed to support its claim before insertion; drops unverifiable candidates transparently. Wired into `/publish-pipeline` and `cowork-digest-publisher`.
+- **Fix (blocking marketplace install): invalid `author`.** `plugin.json` had `author` as a string; the plugin schema requires an object. `claude plugin validate` failed on it, so a marketplace install loaded no components/data. Changed to `{ "name", "url" }`. Both plugin and marketplace manifests now pass `claude plugin validate --strict`.
+- **Fix: reference doc parsed as an agent.** Moved `agents/references/brand-to-leafpad-mapping.md` to `references/brand-to-leafpad-mapping.md` (plugin root) so it is no longer scanned as a frontmatter-less agent. Updated the relative links in `content-generation`, `seo-optimizer`, and `leafpad-publisher` to `../references/…`.
+- **CI: plugin checks.** Added `.github/workflows/plugin-checks.yml` — runs `claude plugin validate --strict` on the marketplace and plugin, and (on PRs) fails if any plugin file changed without a version bump. Enable it as a required check in branch protection to enforce the bump rule.
 
-### Knowledge Base sync
+## 1.4.3 — 2026-06-13
 
-- **`/sync-brand-to-kb [--sections] [--dry-run]`** — pushes Brand Kit OS context into your Leafpad org's Knowledge Base via Leafpad's REST API, so every Leafpad-AI-generated post is brand-aware. `--dry-run` previews the documents before upload.
-
-### Health & onboarding
-
-- **`/doctor`** — read-only health check: verifies both MCP connections, lists brand kits + Leafpad orgs, checks brand-kit completeness and Leafpad readiness, validates the sources registry, and prints a punch list with concrete next steps.
-- **`docs/getting-started.md`** — end-to-end onboarding from install to first post to recurring calendar, with a command cheat sheet and troubleshooting.
-
-### Routines & portability
-
-- **`docs/routines/`** — `weekly-3-articles.md` and `monthly-editorial-calendar.md` show how to wire `/plan-week` + `/execute-calendar` into Cowork scheduled sessions or Claude Code cron for hands-off content.
-- **`docs/integrations/`** — guides for Claude Desktop, VS Code, Cursor, and any generic MCP client / custom code, making the workflow portable across apps and LLMs.
-- **`schemas/rich-article.schema.json`** — the vendor-neutral intermediate object, codified as JSON Schema for interoperability.
-
-### Pipeline changes
-
-- `/publish-pipeline` now (a) calls `topic-scout` when no topic is given, and (b) runs `citation-validator` between drafting and SEO.
-- `cowork-digest-publisher` now adds citations back to original sources and outputs HTML.
-
-## 1.5.0 — 2026-06-11
-
-Major correctness pass integrating direct intel from Leafpad MCP's actual capabilities.
-
-### Corrections (current code was wrong)
-
-- **`content` field is HTML, not Markdown** — `content-generation` now outputs HTML; the rich-article schema body field is HTML; `leafpad-publisher` enforces this. Leafpad's `content` field expects HTML.
-- **`leafpad_update_post` supports updating every field including tags** — removed the "tag updates blocked" rule from `leafpad-publisher` and the corresponding "known limitation" note in README. Post-publish corrections are now first-class.
-- **`leafpad_add_scheduled_posts` AI-generates a brand-new post; it does NOT delay-publish a hand-crafted draft.** Removed the `--schedule <iso>` flag from `/publish-pipeline` (it would have malfunctioned). Replaced with a new dedicated `/ai-schedule` command for the actual AI-scheduled flow.
-- **9 Leafpad MCP tools, not 8** — `leafpad_generate_image` was missing from the inventory.
-- **Dropped `scheduled` from `publish_mode` userConfig enum** — only `draft` and `published` are coherent defaults. AI scheduling is per-run via the new command.
-
-### New
-
-- **`/brand-kit-os-leafpad:ai-schedule "<title>" <iso>`** — schedules a future AI-generated post via `leafpad_add_scheduled_posts`. Builds a brand-aware secondary prompt from BKOS expression + governance + audience + products.
-- **`leafpad-ai-scheduler` agent** — backs the new command. Loads brand context, refines the title, composes the secondary prompt, dispatches the call.
-- **`seo-optimizer` now calls `leafpad_generate_image`** — produces a real CDN-hosted feature image URL aligned with `get_brand_kit_expression.visual_style`. Falls back to prompt-only on tool failure.
-- **`content-generation` now researches the topic against Leafpad's Knowledge Base** — calls `leafpad_get_company_data` to pull real org-specific facts before drafting, grounding article claims.
-- **`leafpad_get_post` with `content_format: "markdown"`** added to seo-optimizer's internal-link analysis path.
-- **`LEAFPAD_REQUESTS.md`** at the repo root — captures the 7 Leafpad MCP gaps (publish_at, KB push, Writing Style sync, delete, create_tag, analytics, post-type support) with shape proposals and plugin-side workarounds.
-- **README expanded** to document Leafpad's auto-extracted FAQ schema, markdown delivery for AIO, server-computed structured data fields, and webhook behavior — so users understand what the publish pipeline relies on and what Leafpad provides "for free".
-
-### Removed
-
-- `--schedule <iso>` flag from `/publish-pipeline` (no clean home in Leafpad's API; replaced with `/ai-schedule`)
-- `scheduled` value from `publish_mode` userConfig enum
-- "Tag updates blocked" / "leafpad_update_post cannot modify tags" claims from README and `leafpad-publisher` rules (was incorrect)
-- `reading_time` computation from `seo-optimizer` (Leafpad derives word count and related fields itself)
-- `wordCount`/`articleSection`/`inLanguage`/FAQ computation from the rich-article schema (Leafpad auto-derives on publish)
+- **Fix (blocking): plugin manifest location.** Moved `plugin.json` to `.claude-plugin/plugin.json`. Claude Desktop's "Upload plugin" rejected the previous root-level manifest with `Invalid plugin: missing .claude-plugin/plugin.json`. This is the spec-required location for both direct upload and marketplace install.
+- **Fix: hooks auto-discovery.** Moved `hooks.json` to `hooks/hooks.json` (the convention Claude Code auto-discovers). At the old root path the SessionStart brand-summary hook never fired.
+- **Leafpad schema calibration (verified against the live MCP, 2026-06-13).** Rewrote `agents/references/brand-to-leafpad-mapping.md` and `agents/leafpad-publisher.md` to the **actual** `leafpad_create_post` schema:
+  - Real accepted fields: `organization_slug`, `name`, `slug`, `html_content` (HTML, not markdown), `post_type`, `published`, `seo_title`, `seo_description`, `seo_keywords` (comma string), `tags` (comma string).
+  - `published` defaults to `true` — drafts must send `published: false`.
+  - Removed unsupported "candidate" fields (`excerpt`, `feature_image`, `og_image`, `categories`, `author_name`, `canonical_url`, `visibility`, `content_format`, `reading_time`, nested `seo{}`). Feature images are a separate `leafpad_generate_image` call; `author` is auto-set from the OAuth identity.
+  - `leafpad_update_post`: SEO fields are co-required (send the full `seo_title`/`seo_description`/`seo_keywords` trio); tags are immutable after creation.
+  - Verified live: tag reuse works (the older "tags return `[]`" caveat did not reproduce); SEO description must be raw text (not HTML-escaped).
+- **Manifest hardening (spec audit).** Added the spec-required `type` + `title` to each `userConfig` option (`brand_kit_api_key`, `publish_mode`); removed the undocumented/inert `capabilities` field and the unsupported `enum` key on `publish_mode` (valid values now documented in its description). Confirmed `${user_config.brand_kit_api_key}` substitution in `.mcp.json` headers is valid per the plugin spec (no change needed).
+- **Docs reconciled to the verified schema.** Updated `README.md` (field-mapping table, tool lists incl. `leafpad_generate_image`, known-limitations), `agents/seo-optimizer.md` (which fields actually reach Leafpad), and the test protocol header so they no longer reference unsupported Leafpad fields.
 
 ## 1.4.2 — 2026-06-11
 

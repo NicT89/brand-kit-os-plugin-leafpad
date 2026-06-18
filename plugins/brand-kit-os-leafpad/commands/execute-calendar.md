@@ -1,6 +1,6 @@
 ---
 description: Take a content calendar produced by /plan-week and schedule each post on Leafpad via the AI scheduler. Optionally hand-craft posts instead of AI-scheduling them.
-argument-hint: [path-to-calendar.json] [--ai-schedule | --draft-now]
+argument-hint: '[path-to-calendar.json] [--ai-schedule | --draft-now]'
 ---
 
 # Execute Calendar

@@ -1,6 +1,6 @@
 ---
 description: Research and build a content calendar of brand-relevant blog topics for the week (or any range), with proposed publish dates. Powered by the topic-scout research agent.
-argument-hint: [--count N] [--start YYYY-MM-DD] [--themes "a, b, c"]
+argument-hint: '[--count N] [--start YYYY-MM-DD] [--themes "a, b, c"]'
 ---
 
 # Plan Week

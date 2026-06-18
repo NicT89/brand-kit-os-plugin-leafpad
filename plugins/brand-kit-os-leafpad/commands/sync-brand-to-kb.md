@@ -1,6 +1,6 @@
 ---
 description: Push Brand Kit OS context (voice, governance, audience, products) into your Leafpad Knowledge Base so every Leafpad-AI-generated post is brand-aware. Uses Leafpad's Knowledge Base REST API.
-argument-hint: [--sections all|voice|governance|audience|products|core] [--dry-run]
+argument-hint: '[--sections all|voice|governance|audience|products|core] [--dry-run]'
 ---
 
 # Sync Brand to Knowledge Base

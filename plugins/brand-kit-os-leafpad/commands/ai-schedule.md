@@ -1,6 +1,6 @@
 ---
 description: Schedule a future Leafpad-AI-generated post with brand voice cues. Leafpad generates the post at the scheduled time using its own AI + your Writing Style + Knowledge Base.
-argument-hint: "<title or topic>" <ISO-8601 datetime>
+argument-hint: '"<title or topic>" <ISO-8601 datetime>'
 ---
 
 # AI Schedule
