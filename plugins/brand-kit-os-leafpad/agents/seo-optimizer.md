@@ -37,15 +37,16 @@ Takes a drafted article and produces full publish-ready metadata for the **rich-
 
 4. **Build `excerpt`** — 1–2 sentences (160–240 chars) distinct from `seo.description`. The SEO description is for search; the excerpt is for blog index pages and social feeds. Derive from the article's intro paragraph in the brand's voice.
 
-5. **Build feature image brief** — A generation prompt the user (or Leafpad's auto-generator) can use:
-   - `feature_image.prompt` — one paragraph describing subject, style, mood, palette. Pull style/palette from `get_brand_kit_expression.visual_style`.
+5. **Build feature image brief** — The prompt the pipeline passes to `leafpad_generate_image` (which applies the org's brand palette automatically):
+   - `feature_image.prompt` — one paragraph describing subject, style, mood. Pull style cues from `get_brand_kit_expression.visual_style`; you do not need to specify exact colors, since Leafpad applies the brand palette.
    - `feature_image.alt` — ≤ 125 chars, descriptive, includes primary keyword where natural
    - `feature_image.caption` — optional one-line caption in brand voice
-   - Note: Leafpad may auto-generate feature images regardless of supplied URL (known limitation). Always still produce the prompt so the user has it for manual upload.
 
 6. **Build `og_image`** — Usually the same as `feature_image`. If the brand has a specific social card style, emit a separate prompt.
 
 7. **Suggest internal links** — Pick 2–4 existing Leafpad posts whose topic overlaps. For each: `anchor` (drawn from draft body), `target_slug`, and a one-line `reason`. Skip if nothing overlaps meaningfully — never fabricate.
+
+7b. **Surface external links** — From the pipeline's research findings, select the 2–4 most credible sources that back the article's factual/data/trend claims. For each: `anchor`, `url`, and `reason`. Only use URLs returned by the research step — never invent a source.
 
 8. **Suggest tags** — Match against `leafpad_list_tags`. If `leafpad_list_tags` returns `[]`, propose new tags from the draft and mark each `new: true`.
 
