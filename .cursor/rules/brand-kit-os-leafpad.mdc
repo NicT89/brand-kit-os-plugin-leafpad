@@ -1,0 +1,59 @@
+---
+description: Brand Kit OS + Leafpad — enforce brand voice and run the publish pipeline using the brand-kit-os and leafpad MCP servers.
+alwaysApply: true
+---
+
+# Brand Kit OS + Leafpad
+
+Mirror of the canonical [AGENTS.md](mdc:AGENTS.md) for Cursor. Connection setup:
+[docs/install/cursor.md](mdc:docs/install/cursor.md). Keep in sync with AGENTS.md.
+
+## MCP tools
+- **Brand Kit OS (read):** `list_brand_kits`, `get_brand_kit_summary`, `get_brand_kit_core`,
+  `get_brand_kit_personality`, `get_brand_kit_expression`, `get_brand_kit_governance`,
+  `get_brand_kit_audience`, `get_brand_kit_products`, `get_brand_kit_personas`,
+  `list_knowledge_files`, `get_knowledge_file`.
+- **Leafpad:** `leafpad_list_organizations`, `leafpad_list_posts`, `leafpad_get_post`,
+  `leafpad_list_tags`, `leafpad_create_post`, `leafpad_update_post`,
+  `leafpad_add_scheduled_posts`, `leafpad_generate_image`, `leafpad_get_company_data`.
+
+## Brand voice enforcement — always
+Before producing or publishing any external-facing content, call `get_brand_kit_summary` (ask
+which kit if several), then layer `get_brand_kit_expression` and `get_brand_kit_governance`.
+Enforce: tone · voice archetype · preferred terminology · negative directory · behavioral
+constraints · compliance · disclosure. **Never override governance** — if the user's request
+conflicts with a constraint, flag it and offer an on-brand alternative.
+
+## Publish pipeline
+1. Resolve brand kit.
+2. Research 3–5 credible external sources (use Cursor's web tools if available); cite them, never
+   fabricate.
+3. Load full brand context (core, personality, expression, governance, audience, products,
+   personas, knowledge files).
+4. `leafpad_list_posts` (internal links) + `leafpad_list_tags` (reuse tags).
+5. Draft: title **8–12 words**, body **≥ 800 words** (target 900+), internal + external links.
+6. SEO: `seo_title` ≤60, `seo_description` 140–160 (raw text, no HTML-escaping), `seo_keywords`
+   and `tags` as comma strings.
+7. `leafpad_generate_image(organization_slug, prompt)` (applies the brand palette); embed the
+   returned CDN URL as an `<img>` in the body with alt text.
+8. **Hard QA gate (blocking):** ≥800 words, 8–12-word title, image embedded, sources cited, 2–4
+   internal links. Revise once; if it fails twice, stop and surface the report — do not publish.
+9. Publish: `draft` → `leafpad_create_post(published:false)`; `published` → `published:true`;
+   `scheduled` → `leafpad_add_scheduled_posts(posts:[{title, date (ISO-8601 UTC), prompt}])`
+   (Leafpad generates a draft on the date — no finished body is sent).
+
+## Leafpad field limits
+`leafpad_create_post` accepts only: `organization_slug, name, slug, html_content` (**HTML, not
+markdown**), `post_type, published` (defaults true — send `false` for draft), `seo_title,
+seo_description, seo_keywords` (comma), `tags` (comma). Do **not** send `excerpt`,
+`feature_image`, `canonical_url`, `categories`, `author`, `visibility`, or a nested `seo {}`
+object — they are rejected. `author` is set by Leafpad from the OAuth identity. No delete
+endpoint (UI only); tags are immutable after create; `update_post` requires the full SEO trio.
+Full mapping: [references/brand-to-leafpad-mapping.md](mdc:plugins/brand-kit-os-leafpad/references/brand-to-leafpad-mapping.md).
+
+## First-run setup
+If the user is connecting for the first time, run the interview in
+[docs/setup/setup-spec.json](mdc:docs/setup/setup-spec.json): detect platform → ask for the Brand
+Kit OS API key (secret; never write it to a committed file) → ask default publish mode (`draft`)
+→ write `.cursor/mcp.json` per the install guide → verify via `list_brand_kits` and
+`leafpad_list_organizations`.
