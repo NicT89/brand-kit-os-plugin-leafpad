@@ -5,10 +5,23 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 ## What's included
 
 - **2 MCP servers** — Brand Kit OS (brand context) + Leafpad (blog publishing)
-- **2 skills** — Brand Context loading + Voice Enforcement
-- **7 agents** — Content generation, brand review, audience adaptation, QA, SEO optimizer, Leafpad publisher, and Cowork digest-to-Leafpad publisher
-- **4 commands** — `/brand-kit-os-leafpad:setup`, `/brand-kit-os-leafpad:enforce-voice`, `/brand-kit-os-leafpad:create-content`, and `/brand-kit-os-leafpad:publish-pipeline`
+- **3 skills** — Brand Context, Voice Enforcement, and Topic Sourcing
+- **10 agents** — content generation, brand review, audience adaptation, QA, SEO optimizer, Leafpad publisher, Cowork digest publisher, plus **topic-scout**, **citation-validator**, and **leafpad-ai-scheduler**
+- **8 commands** — see the cheat sheet below
 - **Session hook** — auto-loads your brand summary at session start
+
+## Command cheat sheet
+
+| Command | What it does |
+|---|---|
+| `/brand-kit-os-leafpad:doctor` | Health check + setup punch list |
+| `/brand-kit-os-leafpad:publish-pipeline <topic> [--draft\|--publish\|--schedule <iso>]` | Research → draft → cite → SEO → QA → publish |
+| `/brand-kit-os-leafpad:ai-schedule "<title>" <iso>` | Schedule a Leafpad-AI-generated future post |
+| `/brand-kit-os-leafpad:plan-week [--count N]` | Research + build a content calendar |
+| `/brand-kit-os-leafpad:execute-calendar [--ai-schedule\|--draft-now]` | Schedule/draft a planned calendar |
+| `/brand-kit-os-leafpad:sync-brand-to-kb` | Push brand context into Leafpad's Knowledge Base |
+| `/brand-kit-os-leafpad:create-content <type> for <audience> about <topic>` | Generate any content type |
+| `/brand-kit-os-leafpad:enforce-voice <content>` | Apply brand voice to a request or text |
 
 ## Prerequisites
 
@@ -50,7 +63,7 @@ Example:
 
 ### Brand Kit OS → Leafpad field mapping
 
-The pipeline builds a rich-article object, then projects it onto the fields `leafpad_create_post` actually accepts (calibrated against the live Leafpad MCP — full detail at [`plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`](plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md)). The verified Leafpad fields:
+The pipeline builds a rich-article object, then projects it onto the fields `leafpad_create_post` actually accepts (calibrated against the live Leafpad MCP — full detail at [`plugins/brand-kit-os-leafpad/references/brand-to-leafpad-mapping.md`](plugins/brand-kit-os-leafpad/references/brand-to-leafpad-mapping.md)). The verified Leafpad fields:
 
 | Leafpad field | Sourced from |
 |---|---|
@@ -92,6 +105,40 @@ The canonical agent instructions are [`AGENTS.md`](AGENTS.md); the per-platform 
 are derived from it. The setup interview an agent runs is
 [`docs/setup/setup-spec.json`](docs/setup/setup-spec.json) — on Claude, run
 `/brand-kit-os-leafpad:setup`.
+## Research & planning — topics, calendars, routines
+
+The plugin can research what to write about, not just how. The `topic-scout` agent draws on your trusted sources, company updates, content gaps, and trends to propose ranked, on-brand topic ideas.
+
+```
+/brand-kit-os-leafpad:plan-week --count 3      # research + build a weekly calendar
+/brand-kit-os-leafpad:execute-calendar         # schedule it on Leafpad
+```
+
+The quality of research depends on a **sources registry** (RSS feeds, citation domains, keyword themes, cadence) — set it up by asking *"Help me set up my content sources registry"* or see the **topic-sourcing** skill. To run this automatically every week/month, see [`docs/routines/`](docs/routines/).
+
+## Citations & authority
+
+The `citation-validator` agent adds 2–4 **verified** outbound citations — each one WebFetched and confirmed to actually support its claim — using your trusted-source domains and citation style. This strengthens search and AI-ranking authority without fabricated links.
+
+## Brand-aware Leafpad AI — Knowledge Base sync
+
+```
+/brand-kit-os-leafpad:sync-brand-to-kb --dry-run
+```
+
+Pushes your Brand Kit OS context (voice, governance, audience, products) into your Leafpad org's Knowledge Base via Leafpad's REST API. Once synced, **every** Leafpad-AI-generated post — including AI-scheduled ones — is brand-aware, not just the ones the plugin hand-crafts.
+
+## AI scheduling — Leafpad-generated future posts
+
+`/brand-kit-os-leafpad:ai-schedule "<title>" <ISO-8601 UTC>` schedules a brand-aware future post via Leafpad's AI. **Leafpad generates the post at the scheduled time**, not us — the plugin prepares a brand-aware brief (title + secondary prompt encoding voice/governance/audience) and hands it off to `leafpad_add_scheduled_posts`.
+
+Example:
+
+```
+/brand-kit-os-leafpad:ai-schedule "Building a brand-first content engine" 2026-07-01T09:30:00Z
+```
+
+> **Hand-crafted vs AI-scheduled.** `/publish-pipeline --schedule <iso>` and `/ai-schedule` both queue a topic for Leafpad to **generate** on the date (Leafpad has no `publish_at` to flip a finished draft live later). Use `/publish-pipeline` for immediate `--draft`/`--publish` runs that we write end-to-end, and `/ai-schedule` (or `--schedule`) when you want Leafpad's own AI to write the future post from a brand-aware brief. See [`LEAFPAD_REQUESTS.md`](LEAFPAD_REQUESTS.md) for gaps we've raised with Leafpad.
 
 ## Leafpad blog publishing
 
