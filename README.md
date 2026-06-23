@@ -79,6 +79,32 @@ The body's `author` is auto-set by Leafpad from your account. Feature images are
 
 Download the `plugins/brand-kit-os-leafpad` folder and upload it via Cowork → Customize → Browse plugins → Upload plugin.
 
+## Platform compatibility
+
+The full **plugin** (skills/agents/commands/hooks) runs only on **Claude**. But the two MCP
+servers connect to any MCP-capable host, and the brand-voice intelligence is ported to each
+platform's native instructions format. Per-platform guides live in
+[`docs/install/`](docs/install/README.md).
+
+| Platform | Plugin? | Brand Kit OS | Leafpad | Intelligence ported as |
+|---|---|---|---|---|
+| [Claude](docs/install/claude.md) (Code + Desktop/Cowork) | ✅ native | Bearer | OAuth (native) | the plugin |
+| [Cursor](docs/install/cursor.md) | MCP + rules | `headers` | OAuth (native) | `.cursor/rules/*.mdc` |
+| [OpenAI Codex CLI](docs/install/codex.md) | MCP + AGENTS.md | `bearer_token` | OAuth via `mcp-remote` | `AGENTS.md` |
+| [ChatGPT](docs/install/chatgpt.md) (Developer Mode) | connectors | API-key | OAuth | custom GPT / Project instructions |
+| [Gemini CLI](docs/install/gemini.md) | MCP + GEMINI.md | `headers` | OAuth | `GEMINI.md` |
+| [Manus](docs/install/manus.md) | MCP integration | URL + key | OAuth/key | agent instructions |
+| [Perplexity](docs/install/perplexity.md) (Pro/Max/Ent) | connectors | API-key | OAuth | Space instructions |
+
+Two caveats apply everywhere: **Brand Kit OS enforces a host allowlist** (a `403` with a valid
+key means the platform needs allowlisting, not a new key), and **Codex** needs an `mcp-remote`
+bridge for Leafpad because it doesn't yet support MCP OAuth.
+
+The canonical agent instructions are [`AGENTS.md`](AGENTS.md); the per-platform mirrors
+(`GEMINI.md`, the Cursor rule, [`docs/portable/custom-instructions.md`](docs/portable/custom-instructions.md))
+are derived from it. The setup interview an agent runs is
+[`docs/setup/setup-spec.json`](docs/setup/setup-spec.json) — on Claude, run
+`/brand-kit-os-leafpad:setup`.
 ## Research & planning — topics, calendars, routines
 
 The plugin can research what to write about, not just how. The `topic-scout` agent draws on your trusted sources, company updates, content gaps, and trends to propose ranked, on-brand topic ideas.

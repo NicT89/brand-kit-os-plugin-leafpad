@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "brand-kit-os-leafpad-setup",
+  "version": "1.5.0",
+  "description": "Machine-readable setup interview for connecting the Brand Kit OS + Leafpad MCP servers on any host. An agent should run the steps in order, asking the user only for the listed inputs, then write the platform's config and verify.",
+  "servers": {
+    "brand-kit-os": {
+      "endpoint": "https://www.brandkitos.com/mcp",
+      "transport": "http",
+      "auth": { "type": "bearer", "header": "Authorization", "value": "Bearer ${BRAND_KIT_API_KEY}" },
+      "notes": "Static API key. Brand Kit OS enforces a host allowlist; a 403 with a valid key means the platform must be allowlisted by Brand Kit OS, not that the key is wrong."
+    },
+    "leafpad": {
+      "endpoint": "https://leafpad.io/mcp",
+      "transport": "http",
+      "auth": { "type": "oauth", "flow": "browser-on-first-connect" },
+      "notes": "OAuth handled natively by most hosts. Hosts without MCP OAuth support (e.g. OpenAI Codex today) must use an mcp-remote stdio bridge: npx -y mcp-remote https://leafpad.io/mcp"
+    }
+  },
+  "inputs": [
+    {
+      "key": "platform",
+      "prompt": "Which host are you setting this up in? (Claude, Cursor, Codex, ChatGPT, Gemini, Manus, Perplexity)",
+      "type": "enum",
+      "values": ["claude", "cursor", "codex", "chatgpt", "gemini", "manus", "perplexity"],
+      "resolution": "Infer from the running environment if possible; only ask if ambiguous. Determines the config file path and whether Leafpad needs an mcp-remote bridge.",
+      "required": true
+    },
+    {
+      "key": "brand_kit_api_key",
+      "prompt": "Paste your Brand Kit OS API key (from https://brandkitos.com/settings -> API Keys; requires a Base or Premium plan).",
+      "type": "secret",
+      "required": true,
+      "handling": "Treat as a secret. Never echo it back, never write it into a file that will be committed. Store via the platform's env var / secret store and reference as ${BRAND_KIT_API_KEY}."
+    },
+    {
+      "key": "publish_mode",
+      "prompt": "Default publish mode for the publish pipeline?",
+      "type": "enum",
+      "values": ["draft", "published", "scheduled"],
+      "default": "draft",
+      "required": false,
+      "notes": "draft = unpublished, review in Leafpad (recommended). published = live immediately. scheduled = queue a topic for Leafpad to generate on a date. Overridable per run."
+    }
+  ],
+  "steps": [
+    {
+      "id": "detect_platform",
+      "action": "Resolve the `platform` input (infer, else ask)."
+    },
+    {
+      "id": "collect_api_key",
+      "action": "Ask for `brand_kit_api_key` and store it as the env var BRAND_KIT_API_KEY (or the platform's secret store)."
+    },
+    {
+      "id": "collect_publish_mode",
+      "action": "Ask for `publish_mode` (default draft)."
+    },
+    {
+      "id": "write_config",
+      "action": "Write the MCP config for the resolved platform using docs/install/<platform>.md. Brand Kit OS: HTTP url + Authorization: Bearer ${BRAND_KIT_API_KEY}. Leafpad: HTTP url (OAuth) — except Codex, where Leafpad uses the mcp-remote bridge command."
+    },
+    {
+      "id": "reload_host",
+      "action": "Tell the user to restart/reload the host so it picks up the new servers."
+    },
+    {
+      "id": "leafpad_oauth",
+      "action": "Explain that the first Leafpad tool call opens a browser to sign in; the token is cached afterward. On Codex, complete the mcp-remote OAuth first."
+    },
+    {
+      "id": "verify",
+      "action": "Call list_brand_kits (Brand Kit OS) and leafpad_list_organizations (Leafpad). Report results. If Brand Kit OS returns 403, surface the host-allowlist note and tell the user to contact Brand Kit OS to allowlist this platform."
+    }
+  ],
+  "verification": {
+    "brand_kit_os": { "tool": "list_brand_kits", "success": "Returns one or more brand kits.", "failure_403": "Valid key but host not allowlisted — contact Brand Kit OS." },
+    "leafpad": { "tool": "leafpad_list_organizations", "success": "Returns one or more organizations after OAuth sign-in." }
+  }
+}

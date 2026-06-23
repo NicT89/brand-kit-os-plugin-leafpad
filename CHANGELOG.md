@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.5.0 — 2026-06-20
+
+- **Cross-platform install docs.** Added [`docs/install/`](docs/install/README.md) with a
+  compatibility matrix and explicit per-platform guides for Claude, Cursor, OpenAI Codex CLI,
+  ChatGPT (Developer Mode), Gemini CLI, Manus, and Perplexity — each with the exact MCP config for
+  Brand Kit OS (HTTP + `Authorization: Bearer`) and Leafpad (HTTP + OAuth). Flags two caveats: the
+  Brand Kit OS host allowlist (`403` = allowlist, not a bad key) and Codex needing an `mcp-remote`
+  bridge for Leafpad's OAuth.
+- **Full intelligence port to native formats.** The brand-voice enforcement + publish-pipeline
+  logic is now reproduced outside the Claude plugin as a canonical [`AGENTS.md`](AGENTS.md) (Codex
+  and the source of truth) with derived mirrors: [`GEMINI.md`](GEMINI.md),
+  [`.cursor/rules/brand-kit-os-leafpad.mdc`](.cursor/rules/brand-kit-os-leafpad.mdc), and a
+  pasteable [`docs/portable/custom-instructions.md`](docs/portable/custom-instructions.md) for
+  ChatGPT / Perplexity / Manus.
+- **Guided setup.** New `/brand-kit-os-leafpad:setup` command plus a machine-readable interview
+  ([`docs/setup/setup-spec.json`](docs/setup/setup-spec.json)) so an agent can detect the platform,
+  collect the API key and publish mode, write the right config, and verify — without the user
+  reading the README.
+- **PDF toolchain fix.** Added `scripts/ensure-pdf-toolchain.sh` (reinstalls `cffi` and ensures
+  `fpdf2` imports) so document generation works in containers that ship LibreOffice core only
+  (no `libreoffice-writer`, which made `soffice` HTML→PDF fail). See
+  [`docs/proposal/README.md`](docs/proposal/README.md) for the optional SessionStart hook.
+- **Partnership proposal.** Added `docs/proposal/` with the Brand Kit OS × Leafpad native-
+  compatibility proposal PDF and its generator.
 ## 1.6.1 — 2026-06-16
 
 Reconciles the parallel v1.6.x line onto the verified v1.4.5 foundation (resolves PR #8).
