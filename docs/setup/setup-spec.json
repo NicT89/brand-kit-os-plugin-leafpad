@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "name": "brand-kit-os-leafpad-setup",
-  "version": "1.5.0",
+  "version": "1.6.2",
   "description": "Machine-readable setup interview for connecting the Brand Kit OS + Leafpad MCP servers on any host. An agent should run the steps in order, asking the user only for the listed inputs, then write the platform's config and verify.",
   "servers": {
     "brand-kit-os": {

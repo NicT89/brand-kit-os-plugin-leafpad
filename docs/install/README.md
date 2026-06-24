@@ -40,6 +40,25 @@ Base or Premium plan). **Leafpad** needs no key — you sign in via the browser 
   support the full OAuth flow, so Leafpad there is reached through an `mcp-remote` stdio bridge
   (see [codex.md](codex.md)). Brand Kit OS (static bearer token) needs no bridge anywhere.
 
+## ⚠️ Verify against current platform docs
+
+The per-platform mechanics here reflect each host's behavior as of **June 2026** and move fast —
+menu labels, config keys, plan/tier gating, and MCP/OAuth support change frequently. Treat these
+guides as a starting point, not a permanent spec. Before relying on a step, **confirm it against
+the platform's own current documentation**, especially for the fastest-moving items:
+
+| Platform | Most likely to change | Authoritative source |
+|---|---|---|
+| OpenAI Codex | MCP OAuth support (may remove the `mcp-remote` bridge need); `experimental_use_rmcp_client` flag | <https://developers.openai.com/codex/mcp> |
+| ChatGPT | Developer Mode availability + plan gating; connector UI | OpenAI Help Center → "Developer mode and MCP" |
+| Manus | "Custom MCP Servers" menu path + auth fields | <https://manus.im/docs/integrations/custom-mcp> |
+| Perplexity | Tier gating (Pro/Max/Enterprise); connector flow | Perplexity Help Center / changelog |
+| Cursor / Gemini CLI | `mcp.json` / `settings.json` schema keys | Cursor Docs → MCP; Gemini CLI MCP docs |
+
+If you find a step is stale, update the relevant `docs/install/<platform>.md` and the matrix
+above. The two **server-side** facts (endpoints, Brand Kit OS bearer auth, Leafpad OAuth) are
+stable; it's the **host-side** wiring that drifts.
+
 ## Letting the agent set it up for you
 
 You don't have to read these docs. Ask your agent to **"set up the Brand Kit OS + Leafpad
