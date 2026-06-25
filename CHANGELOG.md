@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.6.3 — 2026-06-25
+
+Fixes and findings from a full live-test pass of the v1.6 features (draft, schedule, topic-scout, plan-week, doctor, citations, images, KB sync).
+
+- **`citation-validator` → Firecrawl.** Verification now prefers Firecrawl `firecrawl_scrape` over built-in WebFetch. Finding: WebFetch returned **403** on every publisher tested (weforum.org, jasper.ai, azbigmedia.com) while Firecrawl scraped them cleanly with verbatim quotes. WebFetch remains a fallback.
+- **Image generation: fallback chain + softened audit.** `leafpad_generate_image` returns **`Unauthorized`** server-side, so the pipeline now tries it first and **falls back to Gamma/Higgsfield** for a public image URL, embedded inline. The audit gate's **image check is now a Warning, not a hard block** — only body length (≥ 800) and title (8–12 words) block publish. Updated `publish-pipeline`, `quality-assurance`, `enforcement-checklist`, `seo-optimizer`, `leafpad-publisher`.
+- **Documented Leafpad findings** (in `references/brand-to-leafpad-mapping.md` + `LEAFPAD_REQUESTS.md`):
+  - `leafpad_generate_image` is `Unauthorized` while all read + write tools work with the same token; OAuth advertises no scopes → a Leafpad-side entitlement / token-propagation bug. A full report was prepared for the Leafpad team.
+  - **Inline images on existing posts work** via `leafpad_update_post` (re-send the full `html_content` + `<img>`); there is **no featured-image field** — images are body-inline only. Filed requests for a `featured_image` field and a CDN image-upload tool.
+  - **Gamma** is a usable image source: its `generate` result exposes the AI image's direct `cdn.gamma.app` PNG URL (hot-linked; prefer Leafpad CDN once fixed).
+  - KB sync needs a separate `LEAFPAD_API_KEY` (REST); endpoint unverified; no replace → re-sync may duplicate.
+  - Leafpad-AI-generated (scheduled) posts don't enforce our title/length rules — the `/sync-brand-to-kb` editorial-feedback doc is the lever to improve them.
+- Bumped `1.6.2` → `1.6.3`.
+
 ## 1.6.2 — 2026-06-24
 
 Versions the cross-platform work that merged via PR #11 without a version bump (it was mislabeled `1.5.0`, below main's `1.6.1`, which failed the version-bump check), plus follow-up consistency fixes.

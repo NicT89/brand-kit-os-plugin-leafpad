@@ -2,6 +2,24 @@
 
 Gaps discovered while building this plugin. Each unlocks specific functionality in the BKOS+Leafpad workflow. Captured here so we can surface them with Leafpad's team.
 
+## Bugs (blocking)
+
+### 0. `leafpad_generate_image` returns `Unauthorized` (server-side)
+
+**Symptom:** every call returns `Error: Unauthorized. Authenticate via OAuth 2.1`, 100% of the time, while **every other Leafpad tool — including writes** (`create_post`, `update_post`, `add_scheduled_posts`) — succeeds with the same OAuth token in the same session.
+
+**Evidence it isn't client auth:** the OAuth Protected Resource metadata advertises `scopes_supported: []` (no per-tool scope to be missing), and all read + write tools authenticate fine. So it's a **Leafpad-side issue** — most likely a plan/feature entitlement for AI image generation (returning a generic 401 instead of a clear 403), or the OAuth bearer not being propagated to the downstream image pipeline.
+
+**Asks:** confirm image-gen is enabled for the org/plan; verify the image endpoint accepts the same bearer the post endpoints accept; advertise any required scope; fix the misleading "re-authenticate" error message. (A full written report has been shared with the Leafpad team.)
+
+**Workaround:** generate the image with Gamma/Higgsfield and embed the URL inline; hot-links a non-Leafpad CDN until this is fixed.
+
+### 0b. Featured-image field + CDN image-upload
+
+**Why:** `leafpad_create_post` / `leafpad_update_post` have **no featured-image field** — images can only be embedded inline in `html_content`. And with `generate_image` down, there's **no way to host an externally-generated image on Leafpad's CDN** via MCP.
+
+**Shape:** add a `featured_image` field on create/update, and a `leafpad_upload_image({ org_id, file_url | bytes }) -> cdn_url` tool.
+
 ## High-priority — would unlock specific workflows
 
 ### 1. `publish_at` field on `leafpad_update_post`

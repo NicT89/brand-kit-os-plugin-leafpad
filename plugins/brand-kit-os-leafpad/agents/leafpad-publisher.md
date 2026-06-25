@@ -17,7 +17,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 
 - `article` — rich-article object per `../references/brand-to-leafpad-mapping.md` (used for `draft`/`published`)
 - `mode` — `draft` | `published` | `scheduled`. Default is `${user_config.publish_mode}`, falling back to `draft`.
-- `image_url` — optional. CDN URL from `leafpad_generate_image`, embedded in the body as an `<img>`.
+- `image_url` — optional. A public image URL to embed in the body as an `<img>`. Produced by the pipeline's image step: try `leafpad_generate_image` first (on-brand, Leafpad CDN); if it fails — it has returned `Unauthorized` server-side, see `../references/brand-to-leafpad-mapping.md` — fall back to Gamma or Higgsfield and use that URL.
 - For `scheduled` mode only: `schedule = { title, date (ISO-8601 UTC), prompt }` — a topic, a future date, and a brand-voice generation prompt. **Not** a finished article.
 - `organization_slug` — optional. Resolved via `leafpad_list_organizations` if needed.
 
@@ -73,7 +73,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 |------|--------|---------|
 | `leafpad_create_post` | leafpad | Create draft or live post (`draft`/`published` modes) |
 | `leafpad_add_scheduled_posts` | leafpad | Queue a topic for Leafpad to generate on a future date (`scheduled` mode) |
-| `leafpad_generate_image` | leafpad | (Upstream) generate the on-brand feature image; its URL is passed in as `image_url` |
+| `leafpad_generate_image` | leafpad | (Upstream) generate the on-brand feature image; its URL is passed in as `image_url`. **May return `Unauthorized` server-side — pipeline falls back to Gamma/Higgsfield.** |
 | `leafpad_list_organizations` | leafpad | Resolve organization when ambiguous |
 
 ## Output format
@@ -103,3 +103,4 @@ Publish Result:
 5. On non-schema Leafpad MCP failure (auth, network, 5xx), return the article + error and stop — do not retry blindly
 6. Always include the `mode` and full `schema_fit` block in the output. This is how the user discovers their Leafpad schema and updates `../references/brand-to-leafpad-mapping.md`
 7. Never fabricate a Leafpad URL — only return URLs that came back from the MCP response
+8. Images are **body-inline only** (no featured-image field on create or update). To add or change an image on an **existing** post, call `leafpad_update_post` with the full `html_content` re-sent plus the `<img>` (update replaces the whole body, so include everything). Verified working 2026-06-24 on a hosted image URL.
