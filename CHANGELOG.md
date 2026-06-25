@@ -1,6 +1,8 @@
 # Changelog
 
-## 1.5.0 — 2026-06-20
+## 1.6.2 — 2026-06-24
+
+Versions the cross-platform work that merged via PR #11 without a version bump (it was mislabeled `1.5.0`, below main's `1.6.1`, which failed the version-bump check), plus follow-up consistency fixes.
 
 - **Cross-platform install docs.** Added [`docs/install/`](docs/install/README.md) with a
   compatibility matrix and explicit per-platform guides for Claude, Cursor, OpenAI Codex CLI,
@@ -24,6 +26,13 @@
   [`docs/proposal/README.md`](docs/proposal/README.md) for the optional SessionStart hook.
 - **Partnership proposal.** Added `docs/proposal/` with the Brand Kit OS × Leafpad native-
   compatibility proposal PDF and its generator.
+- **Platform-details verification note.** `docs/install/README.md` now flags that host-side
+  install steps drift and should be checked against each platform's current documentation, with a
+  per-platform authoritative-source table.
+- **Consistency fixes.** README command cheat sheet now lists `/brand-kit-os-leafpad:setup` (it
+  shipped in the merge but was missing from the sheet; count corrected to 9); CHANGELOG re-ordered
+  monotonically; manifests bumped `1.6.1` → `1.6.2`.
+
 ## 1.6.1 — 2026-06-16
 
 Reconciles the parallel v1.6.x line onto the verified v1.4.5 foundation (resolves PR #8).

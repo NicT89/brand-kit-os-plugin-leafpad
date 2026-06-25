@@ -7,13 +7,14 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 - **2 MCP servers** — Brand Kit OS (brand context) + Leafpad (blog publishing)
 - **3 skills** — Brand Context, Voice Enforcement, and Topic Sourcing
 - **10 agents** — content generation, brand review, audience adaptation, QA, SEO optimizer, Leafpad publisher, Cowork digest publisher, plus **topic-scout**, **citation-validator**, and **leafpad-ai-scheduler**
-- **8 commands** — see the cheat sheet below
+- **9 commands** — see the cheat sheet below
 - **Session hook** — auto-loads your brand summary at session start
 
 ## Command cheat sheet
 
 | Command | What it does |
 |---|---|
+| `/brand-kit-os-leafpad:setup` | Guided first-run setup: connect both MCP servers, set publish mode, verify |
 | `/brand-kit-os-leafpad:doctor` | Health check + setup punch list |
 | `/brand-kit-os-leafpad:publish-pipeline <topic> [--draft\|--publish\|--schedule <iso>]` | Research → draft → cite → SEO → QA → publish |
 | `/brand-kit-os-leafpad:ai-schedule "<title>" <iso>` | Schedule a Leafpad-AI-generated future post |
@@ -105,6 +106,7 @@ The canonical agent instructions are [`AGENTS.md`](AGENTS.md); the per-platform 
 are derived from it. The setup interview an agent runs is
 [`docs/setup/setup-spec.json`](docs/setup/setup-spec.json) — on Claude, run
 `/brand-kit-os-leafpad:setup`.
+
 ## Research & planning — topics, calendars, routines
 
 The plugin can research what to write about, not just how. The `topic-scout` agent draws on your trusted sources, company updates, content gaps, and trends to propose ranked, on-brand topic ideas.
