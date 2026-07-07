@@ -23,7 +23,7 @@ Validates content against brand standards before delivery. Performs structured c
 6. **Run the blog SEO & structure audit (blog posts only — measured, blocking)** — This is the last gate before publish. Compute and report each value, not just pass/fail:
    - **Word count** of the body (headings + paragraphs + list items, excluding title and disclosure footer). **< 800 = Critical fail.** Target 900+.
    - **Title word count** (whitespace-separated). **Outside 8–12 = Critical fail.**
-   - **Image present** — at least one image embedded in the body (from `leafpad_generate_image`). Missing = Critical fail.
+   - **Image present** — at least one image embedded in the body. Missing = **Warning** (not blocking): emit a manual-image task. Leafpad's `leafpad_generate_image` may be unavailable (it has returned `Unauthorized` server-side); the pipeline falls back to Gamma/Higgsfield, but if every generator fails, flag for manual upload and do **not** block publish on the image.
    - **External sources** — ≥ 2 credible external links where the article makes factual/data claims. Missing = Suggested (Critical if the article leans on stats/trends).
    - **Internal links** — 2–4 to existing Leafpad posts.
 7. **Return verdict** — Pass, Needs Revision, or Fail with specific findings and the measured numbers
@@ -49,7 +49,7 @@ Checks:
 - Blog SEO & structure (blog only):
     word_count: N (min 800, target 900+) — [Pass/Fail]
     title_word_count: N (must be 8–12) — [Pass/Fail]
-    image_embedded: yes/no — [Pass/Fail]
+    image_embedded: yes/no — [Pass/Warn]
     external_sources: N — [Pass/Fail]
     internal_links: N — [Pass/Fail]
 
@@ -73,4 +73,4 @@ Overall: [summary]
 3. A single Critical finding means the overall result is "Needs Revision" at minimum
 4. Multiple Critical findings or a governance violation means "Fail"
 5. Do not block delivery for Optional findings
-6. **The blog SEO & structure audit is a hard gate.** Body < 800 words, a title outside 8–12 words, or no embedded image is each a Critical finding that blocks publish. Always report the measured numbers so the caller can revise precisely.
+6. **The blog SEO & structure audit is a hard gate for length & title.** Body < 800 words or a title outside 8–12 words is each a Critical finding that blocks publish. A **missing image is a Warning, not a block** (emit a manual-image task) — image generation can fail server-side. Always report the measured numbers so the caller can revise precisely.

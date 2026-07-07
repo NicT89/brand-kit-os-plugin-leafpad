@@ -37,7 +37,7 @@ Takes a drafted article and produces full publish-ready metadata for the **rich-
 
 4. **Build `excerpt`** — 1–2 sentences (160–240 chars) distinct from `seo.description`. The SEO description is for search; the excerpt is for blog index pages and social feeds. Derive from the article's intro paragraph in the brand's voice.
 
-5. **Build feature image brief** — The prompt the pipeline passes to `leafpad_generate_image` (which applies the org's brand palette automatically):
+5. **Build feature image brief** — The prompt the pipeline passes to the image generator. It tries `leafpad_generate_image` first (which applies the org's brand palette automatically); if that's unavailable it falls back to Gamma/Higgsfield, so keep the prompt generator-agnostic and include palette/style cues:
    - `feature_image.prompt` — one paragraph describing subject, style, mood. Pull style cues from `get_brand_kit_expression.visual_style`; you do not need to specify exact colors, since Leafpad applies the brand palette.
    - `feature_image.alt` — ≤ 125 chars, descriptive, includes primary keyword where natural
    - `feature_image.caption` — optional one-line caption in brand voice

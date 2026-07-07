@@ -77,6 +77,9 @@ leafpad_generate_image({ organization_slug, prompt }) -> public CDN URL
 
 - Leafpad applies the **org's brand style + color palette** automatically, so the prompt only needs subject/style/mood.
 - There is no featured-image field on `leafpad_create_post`; embed the returned URL as an `<img>` in `html_content` (it becomes an image block in Leafpad's editor).
+- ⚠️ **Known issue (2026-06-24): `leafpad_generate_image` returns `Unauthorized` server-side** even though every other Leafpad tool (read + write) authenticates with the same token. The OAuth resource advertises no scopes (`scopes_supported: []`), and create/update/schedule all succeed — so it's a Leafpad-side entitlement or token-propagation bug, not a client auth problem. Filed in `LEAFPAD_REQUESTS.md`.
+- **Fallback while it's down:** generate with **Gamma** (`generate` → read the AI image's `src` on `cdn.gamma.app` from the result JSON) or **Higgsfield**, then embed that URL. Caveat: those hot-link a non-Leafpad CDN; prefer Leafpad's CDN once the tool is fixed.
+- **Add/replace an image on an existing post:** call `leafpad_update_post` with the full `html_content` re-sent plus the `<img>` (update replaces the whole body). Verified working 2026-06-24.
 
 ## Brand Kit OS sections consumed (full breadth)
 
