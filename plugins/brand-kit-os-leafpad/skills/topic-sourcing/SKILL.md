@@ -13,8 +13,13 @@ This makes topic research repeatable and on-brand instead of generic. The richer
 ## The sources registry
 
 **Location (in priority order):**
-1. Per-brand-kit: `~/.brand-kit-os-leafpad/registry.<brand_kit_id>.json`
-2. Global default: `~/.brand-kit-os-leafpad/registry.json`
+1. Per-brand (recommended): `~/.brand-kit-os-leafpad/brands/<brand-kit-slug>/sources.json`
+   — Created automatically by `/setup`. Use this for all new installs.
+2. Per-brand-kit (legacy): `~/.brand-kit-os-leafpad/registry.<brand_kit_id>.json`
+3. Global default (legacy): `~/.brand-kit-os-leafpad/registry.json`
+
+All three locations are honored for backward compatibility. If the new per-brand file exists,
+it takes precedence. The `/setup` command creates the new structure automatically on first run.
 
 If neither exists, `topic-scout` falls back to Leafpad's Knowledge Base + web search, and notes that adding a registry improves results.
 
@@ -34,7 +39,11 @@ If neither exists, `topic-scout` falls back to Leafpad's Knowledge Base + web se
 
 ## How to set it up
 
-When a user wants to start content planning, help them create the registry:
+The `/setup` command scaffolds this file automatically on first run, pre-populated with
+keyword clusters from the brand kit. To add or update sources afterward, run
+`/brand-kit-os-leafpad:topic-sourcing` or edit the file directly.
+
+To set up manually (or add sources to an existing registry):
 
 1. Ask for 3–8 industry sources they trust (publications, blogs, newsletters with RSS).
 2. Ask for any authoritative sources they want cited (research orgs, official data).

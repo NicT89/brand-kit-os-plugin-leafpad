@@ -36,7 +36,19 @@ The agent draws from multiple sources and labels each idea with where it came fr
 2. **Load the sources registry** — Read `~/.brand-kit-os-leafpad/registry.json` if present (the `topic-sourcing` skill documents its shape). If absent, proceed with Leafpad + web sources only and note that adding a registry improves results.
 3. **Pull from each source** in parallel where possible:
    - Company updates via `leafpad_get_company_data` and/or `internal_news_feed_url`
-   - Each `trusted_sources` RSS/feed URL via WebFetch — extract recent headlines
+   - Each `trusted_sources` RSS/feed URL — fetch based on `type`:
+     - `rss` or `atom`: Use Python `feedparser` via bash for reliable structured parsing:
+
+       ```bash
+       pip install feedparser --break-system-packages -q
+       python3 -c "import feedparser, json
+       feed = feedparser.parse('<url>')
+       entries = [{'title': e.title, 'link': e.link, 'summary': e.get('summary','')[:300], 'published': e.get('published','')} for e in feed.entries[:10]]
+       print(json.dumps(entries))"
+       ```
+
+       This handles encoding, malformed XML, and date normalization automatically. Fall back to WebFetch only if bash is unavailable.
+     - `html`: Use WebFetch or `firecrawl_scrape` to extract headlines from the page.
    - `leafpad_list_posts` for what's already covered (dedup + gap analysis)
    - WebSearch for trending angles in the brand's space
 4. **Generate candidate topics** — For each promising thread, draft a topic idea: working title, angle, why-now, and which products/audience it serves.
@@ -56,6 +68,7 @@ The agent draws from multiple sources and labels each idea with where it came fr
 | `leafpad_get_company_data` | Company updates + news from the org's Knowledge Base |
 | `leafpad_list_posts`, `leafpad_list_tags` | Dedup + content-gap analysis |
 | WebFetch | Pull RSS/news feeds from the trusted-sources registry |
+| bash (feedparser) | Parse RSS/Atom feeds into structured headline data — preferred over raw WebFetch for feed types |
 | WebSearch | Trending and seasonal angles in the brand's industry |
 
 ## Output format
