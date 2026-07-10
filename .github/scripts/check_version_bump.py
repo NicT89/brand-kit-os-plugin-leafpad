@@ -71,7 +71,10 @@ def main():
         "marketplace.plugins[0]": marketplace["plugins"][0]["version"],
     }
     if len(set(versions.values())) != 1:
-        fail(f"Version mismatch across manifests: {versions}. Keep them in sync.")
+        fail(
+            f"Version mismatch across manifests: {versions}. Keep them in sync — "
+            f"run `scripts/bump-version.sh <version>` to update all three at once."
+        )
 
     # 3. require a bump when plugin-relevant files changed.
     relevant = [f for f in changed_files(base) if f.startswith(WATCH_PREFIXES)]
@@ -90,7 +93,8 @@ def main():
         fail(
             f"{len(relevant)} plugin file(s) changed but version was not bumped "
             f"(base={base_plugin['version']}, head={plugin['version']}). "
-            f"Bump {PLUGIN_MANIFEST} and {MARKETPLACE}."
+            f"Run `scripts/bump-version.sh <version>` to bump {PLUGIN_MANIFEST} "
+            f"and {MARKETPLACE} together."
         )
 
     print(f"Version bumped {base_plugin['version']} -> {plugin['version']} "
