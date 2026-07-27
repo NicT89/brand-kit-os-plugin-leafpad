@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.7.0 — 2026-07-12
+
+Local file structure, per-brand sources, and a plugin self-update check — plus the release
+tooling to keep versions and CI in sync. Merged via PRs #14 and #15.
+
+- **Local file structure + per-brand config.** The plugin now reads and writes a
+  `~/.brand-kit-os-leafpad/` runtime layout (per-brand `config.json` carrying `plugin_version`,
+  sources registry, etc.). See `plugins/brand-kit-os-leafpad/references/file-structure.md`.
+- **Per-brand sources registry + RSS.** Topic research can pull from a maintained sources
+  registry, with RSS feeds parsed via `feedparser` instead of ad-hoc scraping.
+- **Plugin version check in `/doctor`.** New step 7 fetches
+  `GET /repos/NicT89/brand-kit-os-plugin-leafpad/releases/latest`, parses `tag_name` (leading
+  `v` stripped), and reports 🟢 up to date / 🟡 update available / 🔴 check skipped — always last,
+  never blocking the other checks. This is what makes publishing a release matter.
+- **Release tooling.** `scripts/bump-version.sh <x.y.z>` bumps the version across all three
+  CI-enforced manifest fields in one step; a `version-bump` CI job
+  (`.github/scripts/check_version_bump.py`) enforces a monotonic bump and manifest-version
+  consistency on every PR; and `docs/maintainers/releasing.md` documents the release + CI runbook.
+- **Release automation (this version).** `.github/workflows/release.yml` now tags and publishes a
+  GitHub Release automatically when a version bump merges to `main`, so `releases/latest` stays
+  current for the `/doctor` check.
+
 ## 1.6.3 — 2026-06-25
 
 Fixes and findings from a full live-test pass of the v1.6 features (draft, schedule, topic-scout, plan-week, doctor, citations, images, KB sync).

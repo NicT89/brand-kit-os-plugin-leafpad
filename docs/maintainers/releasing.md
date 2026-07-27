@@ -35,6 +35,35 @@ three fields match. Then:
 The `version-bump` job only requires a bump when files under `plugins/` or `.claude-plugin/`
 change. Docs-only or `scripts/`-only PRs (like this one) don't need a bump and shouldn't get one.
 
+## Cutting a release (tag + GitHub Release)
+
+A merge to `main` does **not** create a release on its own. The `/doctor` version check
+(`commands/doctor.md`, step 7) reads
+`GET https://api.github.com/repos/NicT89/brand-kit-os-plugin-leafpad/releases/latest`, so until a
+**published GitHub Release** exists for a version, that endpoint 404s and the check can't report
+"up to date." A bare git tag is **not** enough — `releases/latest` only returns published Releases.
+
+**Tag convention:** `v<semver>` (e.g. `v1.7.0`). `/doctor` strips a leading `v` before comparing,
+so `v1.7.0` and `1.7.0` both work — but always tag `v<semver>` for consistency.
+
+**Automated path (the normal case).** `.github/workflows/release.yml` runs on every push to `main`
+that touches a version manifest. It reads `.version` from `plugin.json`, and if no `v<version>`
+release exists yet, it creates the tag `v<version>` and a GitHub Release, using the matching
+`## <version>` section of `CHANGELOG.md` as the release notes (falling back to auto-generated notes
+if that section is missing). So: **land the `## <version>` CHANGELOG entry in the same PR as the
+bump** — it becomes the release notes. The job is idempotent; a re-run when the release already
+exists exits cleanly.
+
+**Manual / backfill path.** To release a version that's already on `main` (the workflow only fires
+on the bump commit), or to retry a failed run, trigger `release.yml` manually:
+
+- GitHub UI: **Actions → Release → Run workflow** on `main`, or
+- From an agent session: `mcp__github__actions_run_trigger` with
+  `method: run_workflow`, `workflow_id: release.yml`, `ref: main`.
+
+**Verify** with `mcp__github__get_latest_release` (expect `tag_name: v<version>`) or
+`mcp__github__list_tags`.
+
 ## Checking CI from an agent session (GitHub MCP)
 
 The combined-status endpoint only reports **legacy commit statuses**. This repo's checks run as

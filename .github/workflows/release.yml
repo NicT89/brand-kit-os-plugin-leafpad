@@ -1,0 +1,95 @@
+name: Release
+
+# Create the git tag + GitHub Release automatically whenever a version bump lands
+# on main, so `releases/latest` always reflects the shipped version. The plugin's
+# `/doctor` version check reads that endpoint — without a published Release it 404s.
+#
+# Triggers:
+#   - push to main touching a version manifest -> auto-release the new version.
+#   - workflow_dispatch -> manual run (used to backfill an already-merged version,
+#     or to re-attempt a failed release).
+#
+# Idempotent: if a release for the current version already exists, it exits cleanly.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'plugins/brand-kit-os-leafpad/.claude-plugin/plugin.json'
+      - '.claude-plugin/marketplace.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag and publish GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read plugin version
+        id: version
+        run: |
+          version="$(jq -r '.version' plugins/brand-kit-os-leafpad/.claude-plugin/plugin.json)"
+          if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "::error::Could not read .version from plugin.json"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "Plugin version: $version (tag v$version)"
+
+      - name: Skip if release already exists
+        id: exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists — nothing to do."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build release notes from CHANGELOG
+        if: steps.exists.outputs.skip != 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Pull the "## <version> — ..." section, up to (but not including) the next "## ".
+          awk -v v="$VERSION" '
+            $0 ~ "^## " v "([^0-9.]|$)" { grab=1; print; next }
+            grab && /^## / { exit }
+            grab { print }
+          ' CHANGELOG.md > release-notes.md || true
+          if [ -s release-notes.md ]; then
+            echo "Using CHANGELOG section for $VERSION as release notes:"
+            cat release-notes.md
+          else
+            echo "No CHANGELOG section for $VERSION — will auto-generate notes."
+            rm -f release-notes.md
+          fi
+
+      - name: Create tag and GitHub Release
+        if: steps.exists.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if [ -s release-notes.md ]; then
+            gh release create "$TAG" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
+              --notes-file release-notes.md
+          else
+            gh release create "$TAG" \
+              --target "$GITHUB_SHA" \
+              --title "$TAG" \
+              --generate-notes
+          fi
+          echo "Published release $TAG."
