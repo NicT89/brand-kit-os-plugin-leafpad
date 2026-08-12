@@ -33,7 +33,35 @@ The agent draws from multiple sources and labels each idea with where it came fr
 ## Workflow
 
 1. **Load brand context** (lightweight) — `get_brand_kit_summary` (mission, category), `get_brand_kit_audience` (who we're writing for), `get_brand_kit_products` (what we sell), `get_brand_kit_expression.content_categories` (what themes fit).
-2. **Load the sources registry** — Read `~/.brand-kit-os-leafpad/registry.json` if present (the `topic-sourcing` skill documents its shape). If absent, proceed with Leafpad + web sources only and note that adding a registry improves results.
+2. **Load the sources registry**: Read `~/.brand-kit-os-leafpad/brands/<slug>/sources.json` if present (the `topic-sourcing` skill documents its shape; the legacy `~/.brand-kit-os-leafpad/registry.json` is still honored as a fallback).
+
+   If `~/.brand-kit-os-leafpad/brands/<slug>/sources.json` does not exist, auto-scaffold it:
+
+   1. Call `get_brand_kit_expression` with the active `brand_kit_id` to get terminology and content themes.
+   2. Create the file with this structure:
+      ```json
+      {
+        "brand_kit_id": "<active_brand_kit_id>",
+        "brand_kit_slug": "<active_brand_kit_slug>",
+        "last_updated": "<today ISO 8601>",
+        "trusted_sources": [],
+        "seo_keyword_clusters": [],
+        "authoritative_citations": {
+          "domains": [],
+          "prefer_recent": true,
+          "max_age_days": 365
+        },
+        "competitor_content_feeds": [],
+        "topic_cadence": {
+          "posts_per_week": 3,
+          "preferred_days": ["Monday", "Wednesday", "Friday"],
+          "preferred_time": "09:00",
+          "timezone": "America/Chicago"
+        }
+      }
+      ```
+   3. Note to the user at the end of the run: "Your sources registry was missing and has been auto-created. Run /brand-kit-os-leafpad:discover-sources to add RSS feeds, newsletters, and competitor sites."
+   4. Continue with topic research using only web search and brand kit data (no RSS feeds yet since the registry is empty).
 3. **Pull from each source** in parallel where possible:
    - Company updates via `leafpad_get_company_data` and/or `internal_news_feed_url`
    - Each `trusted_sources` RSS/feed URL — fetch based on `type`:

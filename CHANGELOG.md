@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.8.0 - 2026-08-12
+
+Setup-first onboarding, guided source discovery, and a bundled trusted-sources library.
+
+- **Doctor setup gate (Step 0).** `/doctor` now refuses to run health checks when
+  `config.json` is missing and directs the user to `/setup`, instead of emitting confusing
+  failures on an uninitialized install.
+- **MCP gate in setup (Step 1).** `/setup` verifies both the Brand Kit OS and Leafpad MCPs are
+  reachable before doing any work, and stops with an exact fix message if either is disconnected.
+- **Cadence selection (Step 5).** `/setup` shows the default posting schedule (3 posts/week,
+  Mon/Wed/Fri, 9:00 AM America/Chicago) and lets the user confirm or customize before writing
+  `topic_cadence` to `sources.json`.
+- **Source discovery.** New `/discover-sources` command scans Gmail for newsletters, accepts
+  Substack/Reddit/website/competitor URLs, validates feeds with feedparser, scrapes non-RSS
+  sites via Firecrawl or Apify, and merges results additively into `brands/<slug>/sources.json`.
+  It runs inline during `/setup` and stands alone thereafter.
+- **Topic-scout auto-scaffold.** When `sources.json` is missing, `topic-scout` now creates it
+  from brand kit data and continues, instead of warning and stopping.
+- **Trusted sources library.** New `references/trusted-sources/` (`default-sources.json` +
+  `README.md`) bundles curated sources across five categories; `/setup` seeds the categories the
+  user selects into their local registry.
+- **Version bump.** `1.7.0` to `1.8.0`.
+- No breaking changes: existing `config.json`, `sources.json`, and `history.json` schemas are
+  forward-compatible; a legacy `registry.json` is detected and flagged, never deleted.
+
 ## 1.7.0 — 2026-07-12
 
 Local file structure, per-brand sources, and a plugin self-update check — plus the release
