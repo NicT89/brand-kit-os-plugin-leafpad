@@ -1,0 +1,204 @@
+{
+  "version": "1.0.0",
+  "description": "Curated list of authoritative sources by category. Setup seeds relevant categories into the user's brands/<slug>/sources.json based on their brand kit content themes. All RSS URLs have been verified.",
+  "categories": {
+    "ai_tech": {
+      "label": "AI / Tech",
+      "description": "AI, machine learning, and technology publications",
+      "sources": [
+        {
+          "name": "MIT Technology Review",
+          "url": "https://www.technologyreview.com",
+          "rss": "https://www.technologyreview.com/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "VentureBeat AI",
+          "url": "https://venturebeat.com/category/ai/",
+          "rss": "https://venturebeat.com/category/ai/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "Wired",
+          "url": "https://www.wired.com",
+          "rss": "https://www.wired.com/feed/rss",
+          "type": "rss"
+        },
+        {
+          "name": "The Verge",
+          "url": "https://www.theverge.com",
+          "rss": "https://www.theverge.com/rss/index.xml",
+          "type": "rss"
+        },
+        {
+          "name": "Anthropic Blog",
+          "url": "https://www.anthropic.com/news",
+          "rss": "https://www.anthropic.com/rss.xml",
+          "type": "rss"
+        },
+        {
+          "name": "Ars Technica",
+          "url": "https://arstechnica.com",
+          "rss": "https://feeds.arstechnica.com/arstechnica/index",
+          "type": "rss"
+        },
+        {
+          "name": "Ben's Bites",
+          "url": "https://bensbites.beehiiv.com",
+          "rss": "https://bensbites.beehiiv.com/feed",
+          "type": "rss"
+        }
+      ]
+    },
+    "marketing_brand": {
+      "label": "Marketing / Brand",
+      "description": "Marketing, branding, and content strategy publications",
+      "sources": [
+        {
+          "name": "Content Marketing Institute",
+          "url": "https://contentmarketinginstitute.com",
+          "rss": "https://contentmarketinginstitute.com/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "Marketing Week",
+          "url": "https://www.marketingweek.com",
+          "rss": "https://www.marketingweek.com/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "SparkToro Blog",
+          "url": "https://sparktoro.com/blog",
+          "rss": "https://sparktoro.com/blog/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "Seth Godin's Blog",
+          "url": "https://seths.blog",
+          "rss": "https://seths.blog/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "MarTech",
+          "url": "https://martech.org",
+          "rss": "https://martech.org/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "Brand New (UnderConsideration)",
+          "url": "https://www.underconsideration.com/brandnew",
+          "rss": "https://www.underconsideration.com/brandnew/index.rdf",
+          "type": "rss"
+        }
+      ]
+    },
+    "saas_startups": {
+      "label": "SaaS / Startups",
+      "description": "SaaS growth, startup strategy, and indie building",
+      "sources": [
+        {
+          "name": "Indie Hackers",
+          "url": "https://www.indiehackers.com",
+          "rss": "https://www.indiehackers.com/feed.xml",
+          "type": "rss"
+        },
+        {
+          "name": "First Round Review",
+          "url": "https://review.firstround.com",
+          "rss": "https://review.firstround.com/rss.xml",
+          "type": "rss"
+        },
+        {
+          "name": "Stratechery",
+          "url": "https://stratechery.com",
+          "rss": "https://stratechery.com/feed/",
+          "type": "rss"
+        },
+        {
+          "name": "Lenny's Newsletter",
+          "url": "https://www.lennysnewsletter.com",
+          "rss": "https://www.lennysnewsletter.com/feed",
+          "type": "rss"
+        },
+        {
+          "name": "a16z Blog",
+          "url": "https://a16z.com/blog/",
+          "rss": "https://a16z.com/feed/",
+          "type": "rss"
+        }
+      ]
+    },
+    "ai_agents_mcp": {
+      "label": "AI Agents / MCP",
+      "description": "AI agents, Model Context Protocol ecosystem, and agentic workflow tooling",
+      "sources": [
+        {
+          "name": "Latent Space",
+          "url": "https://www.latent.space",
+          "rss": "https://www.latent.space/feed",
+          "type": "rss"
+        },
+        {
+          "name": "LangChain Blog",
+          "url": "https://blog.langchain.dev",
+          "rss": "https://blog.langchain.dev/rss/",
+          "type": "rss"
+        },
+        {
+          "name": "OpenAI Blog",
+          "url": "https://openai.com/blog",
+          "rss": "https://openai.com/blog/rss.xml",
+          "type": "rss"
+        },
+        {
+          "name": "The Neuron",
+          "url": "https://www.theneurondaily.com",
+          "rss": "https://www.theneurondaily.com/feed",
+          "type": "rss"
+        }
+      ]
+    },
+    "reddit_communities": {
+      "label": "Reddit Communities",
+      "description": "High-signal Reddit communities for community-driven topic research",
+      "sources": [
+        {
+          "name": "r/SaaS",
+          "url": "https://www.reddit.com/r/SaaS/",
+          "rss": "https://www.reddit.com/r/SaaS/.rss",
+          "type": "rss"
+        },
+        {
+          "name": "r/marketing",
+          "url": "https://www.reddit.com/r/marketing/",
+          "rss": "https://www.reddit.com/r/marketing/.rss",
+          "type": "rss"
+        },
+        {
+          "name": "r/Entrepreneur",
+          "url": "https://www.reddit.com/r/Entrepreneur/",
+          "rss": "https://www.reddit.com/r/Entrepreneur/.rss",
+          "type": "rss"
+        },
+        {
+          "name": "r/branding",
+          "url": "https://www.reddit.com/r/branding/",
+          "rss": "https://www.reddit.com/r/branding/.rss",
+          "type": "rss"
+        },
+        {
+          "name": "r/vibecoding",
+          "url": "https://www.reddit.com/r/vibecoding/",
+          "rss": "https://www.reddit.com/r/vibecoding/.rss",
+          "type": "rss"
+        },
+        {
+          "name": "r/artificial",
+          "url": "https://www.reddit.com/r/artificial/",
+          "rss": "https://www.reddit.com/r/artificial/.rss",
+          "type": "rss"
+        }
+      ]
+    }
+  }
+}

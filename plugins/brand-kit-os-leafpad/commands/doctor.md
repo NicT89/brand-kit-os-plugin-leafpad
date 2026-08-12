@@ -11,6 +11,17 @@ Run a full pre-flight check so you know everything is wired up before creating c
 
 Run each check and report a green/yellow/red status with a fix for anything not green.
 
+0. **Setup gate**: Before running any other checks, verify the plugin has been initialized.
+
+   Run this bash check:
+   ```bash
+   test -f ~/.brand-kit-os-leafpad/config.json && echo "EXISTS" || echo "MISSING"
+   ```
+
+   - If the result is `MISSING`: stop immediately. Do not run Steps 1-7. Output exactly:
+     "Plugin not initialized. Run `/brand-kit-os-leafpad:setup` first. Setup takes about 2 minutes and will connect your brand kits, configure your posting schedule, and discover content sources."
+   - If the result is `EXISTS`: continue to Step 1.
+
 1. **Brand Kit OS connection** — Call `list_brand_kits`.
    - 🟢 Returns one or more kits → list their names/ids
    - 🟡 Returns empty → "Connected, but no brand kits yet. Create one at brandkitos.com."
@@ -36,12 +47,12 @@ Run each check and report a green/yellow/red status with a fix for anything not 
 6. **Config** — Confirm `publish_mode` is set and report its value. Confirm the BKOS API key is configured (don't print it).
 
 7. **Plugin version check** — Compare the installed version against the latest GitHub release.
-   - The current installed version of this plugin is `1.7.0`. Update this constant in lockstep with `plugin.json` on every release.
+   - The current installed version of this plugin is `1.8.0`. Update this constant in lockstep with `plugin.json` on every release.
    - Fetch the latest release via WebFetch: `GET https://api.github.com/repos/NicT89/brand-kit-os-plugin-leafpad/releases/latest`
      Parse the `tag_name` field (strip a leading `v` if present for comparison).
-   - 🟢 Installed version matches or exceeds latest → "Plugin is up to date (v1.7.0)"
-   - 🟡 Installed is behind latest → "Plugin v1.7.0 installed — v<latest> available. Update via Settings → Capabilities → Plugins."
-   - 🔴 GitHub API unreachable or returns an error → "Version check skipped — network unavailable. Installed: v1.7.0"
+   - 🟢 Installed version matches or exceeds latest → "Plugin is up to date (v1.8.0)"
+   - 🟡 Installed is behind latest → "Plugin v1.8.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins."
+   - 🔴 GitHub API unreachable or returns an error → "Version check skipped: network unavailable. Installed: v1.8.0"
 
 ## Output format
 
@@ -54,12 +65,12 @@ Brand Kit OS + Leafpad — Health Check
 🟢 Leafpad content     14 existing posts · Knowledge Base populated
 🟡 Sources registry    Not found — topic research will use web search only
 🟢 Config              publish_mode=draft · API key set
-🟢 Plugin version      v1.7.0 · up to date
+🟢 Plugin version      v1.8.0 · up to date
 
 Punch list:
 1. [registry] Run setup to add trusted sources → better topic ideas. Want me to start?
 2. [personas] Optional: add AI personas in Brand Kit OS for byline attribution.
-3. [version] Plugin v1.7.0 installed — v<latest> available. Update via Settings → Capabilities → Plugins.
+3. [version] Plugin v1.8.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins.
 
 You're ready to create content. Try:
   /brand-kit-os-leafpad:plan-week
@@ -72,4 +83,4 @@ You're ready to create content. Try:
 2. Run every check even if an early one fails — give the full picture in one pass
 3. For every yellow/red, give a concrete next action
 4. Keep it fast and read-only — `doctor` must never create, schedule, or modify anything
-5. Check version last — it should never block the other checks from running.
+5. Check version last (Step 7); it should never block the other checks from running.

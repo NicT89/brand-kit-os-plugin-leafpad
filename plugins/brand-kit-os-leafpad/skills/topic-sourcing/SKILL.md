@@ -37,6 +37,20 @@ If neither exists, `topic-scout` falls back to Leafpad's Knowledge Base + web se
 | `citation_style_guide` | object | citation-validator | Anchor-text style, `rel` rules, whether to append a Sources block, competitor-link policy. |
 | `topic_cadence` | object | plan-week | Default posts-per-week and preferred publish days/times. |
 
+## Adding sources with /discover-sources
+
+Run `/brand-kit-os-leafpad:discover-sources` at any time to expand your sources registry:
+
+- Gmail newsletter scan: finds newsletters you already subscribe to and extracts their RSS feeds
+- Substack: add publications you follow by slug or profile URL
+- Reddit: add subreddit RSS feeds by name
+- Your website: monitors your own blog for publishing history
+- Competitors: monitors competitor blogs via RSS or Firecrawl scrape
+
+Discovery merges additively. It never removes or overwrites sources you have already added.
+
+Run `/discover-sources` again whenever you want to add new sources. It skips anything already in the registry.
+
 ## How to set it up
 
 The `/setup` command scaffolds this file automatically on first run, pre-populated with
