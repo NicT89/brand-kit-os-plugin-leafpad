@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.9.0 - 2026-10-15
+
+Fixes for MCP servers being dropped at load and a failing session-start hook, plus content
+merged in from the Brand Kit OS app so this repo is the single source for the Leafpad plugin.
+
+- **MCP servers now load.** Both `brand-kit-os` and `leafpad` entries in `.mcp.json` now set
+  `"type": "http"`. Without it, Claude Code parsed them as local (stdio) servers and silently
+  dropped them, so neither MCP connected from the plugin.
+- **Session-start hook fixed.** SessionStart only runs `command` hooks, so the `agent` hook
+  errored on every startup. Replaced with `hooks/scripts/session-start.sh`, which tells Claude
+  to load brand context on the first brand- or Leafpad-related request.
+- **Digest publisher updated.** `cowork-digest-publisher` now uses the app's newer version
+  (immediate and scheduled modes, voice calibration, Leafpad context, tiered publish fields),
+  keeping this repo's citation-validator step for news-derived posts.
+- **Data model reference expanded.** `brand-context/references/data-model.md` now documents
+  the write tools (upsert/update/create) and live payload shapes, not just the read tools.
+
 ## 1.8.0 - 2026-08-12
 
 Setup-first onboarding, guided source discovery, and a bundled trusted-sources library.
