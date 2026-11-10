@@ -15,7 +15,9 @@ Brand Kit OS signs in through the browser in Claude. No API key needed.
 - **Docs.** README, `docs/install/claude.md`, `AGENTS.md` and `docs/setup/setup-spec.json` no
   longer say MCP needs a Base or Premium plan. Non-Claude hosts (Cursor, VS Code, Gemini and
   others) still connect with an API key header, which any plan can create.
-- **`/doctor`** checks the Brand Kit OS connection is signed in rather than that a key is set.
+- **`/doctor` and `/setup`** check the Brand Kit OS connection is signed in rather than that a
+  key is set, and give sign-in steps for a `401`. Their version constants are now `1.9.0`.
+- **Setup spec** makes the API key optional on Claude and adds a Brand Kit OS sign-in step.
 - **Version bump.** `1.8.0` to `1.9.0`. Existing installs: after updating, run `/mcp` and
   Authenticate `brand-kit-os` once.
 

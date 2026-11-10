@@ -63,7 +63,9 @@ automation), add `--header "Authorization: Bearer $BRAND_KIT_API_KEY"` to the fi
 ## Troubleshooting
 
 - **`401` from Brand Kit OS:** the connection is not signed in yet. Run `/mcp`, select
-  `brand-kit-os` and choose **Authenticate** (Claude Desktop or Cowork: click **Connect**).
+  `brand-kit-os` and choose **Authenticate** (Claude Desktop or Cowork: click **Connect**). If you
+  added the server with an API key header, a rejected key does not fall back to sign-in: check
+  the key, or remove the server and add it again without the header.
 - **`403` from Brand Kit OS:** this is not a plan limit; every plan can connect. Contact
   Brand Kit OS support.
 - **No brand summary at startup:** confirm the `brand-kit-os` server shows connected and

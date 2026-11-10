@@ -88,7 +88,7 @@ platform's native instructions format. Per-platform guides live in
 
 | Platform | Plugin? | Brand Kit OS | Leafpad | Intelligence ported as |
 |---|---|---|---|---|
-| [Claude](docs/install/claude.md) (Code + Desktop/Cowork) | ✅ native | Bearer | OAuth (native) | the plugin |
+| [Claude](docs/install/claude.md) (Code + Desktop/Cowork) | ✅ native | OAuth (native, no key) | OAuth (native) | the plugin |
 | [Cursor](docs/install/cursor.md) | MCP + rules | `headers` | OAuth (native) | `.cursor/rules/*.mdc` |
 | [OpenAI Codex CLI](docs/install/codex.md) | MCP + AGENTS.md | `bearer_token` | OAuth via `mcp-remote` | `AGENTS.md` |
 | [ChatGPT](docs/install/chatgpt.md) (Developer Mode) | connectors | API-key | OAuth | custom GPT / Project instructions |

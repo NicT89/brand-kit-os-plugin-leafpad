@@ -13,15 +13,16 @@ This plugin ships two things:
 
 | Server | Endpoint | Transport | Auth |
 |---|---|---|---|
-| Brand Kit OS | `https://www.brandkitos.com/mcp` | Streamable HTTP | `Authorization: Bearer <BRAND_KIT_API_KEY>` |
+| Brand Kit OS | `https://www.brandkitos.com/mcp` | Streamable HTTP | Claude: OAuth sign-in (no key). Other hosts: `Authorization: Bearer <BRAND_KIT_API_KEY>` |
 | Leafpad | `https://leafpad.io/mcp` | Streamable HTTP | OAuth (browser sign-in on first connect) |
 
-**Get your Brand Kit OS API key:** <https://brandkitos.com/settings> → API Keys (requires a
-Base or Premium plan). **Leafpad** needs no key — you sign in via the browser on first use.
+**Claude needs no Brand Kit OS key:** it signs in through the browser. **Other hosts:** get an
+API key at <https://brandkitos.com/settings> → API Keys (any plan can create one; saving changes
+needs a paid plan). **Leafpad** needs no key: you sign in via the browser on first use.
 
 ## Compatibility matrix
 
-| Platform | Runs the full plugin? | Brand Kit OS (Bearer) | Leafpad (OAuth) | Intelligence ported as | Guide |
+| Platform | Runs the full plugin? | Brand Kit OS | Leafpad (OAuth) | Intelligence ported as | Guide |
 |---|---|---|---|---|---|
 | **Claude** (Code + Desktop/Cowork) | ✅ Yes — native | ✅ Native | ✅ Native | The plugin itself | [claude.md](claude.md) |
 | **Cursor** | ❌ (MCP + rules) | ✅ `headers` | ✅ Native OAuth | `.cursor/rules/*.mdc` | [cursor.md](cursor.md) |

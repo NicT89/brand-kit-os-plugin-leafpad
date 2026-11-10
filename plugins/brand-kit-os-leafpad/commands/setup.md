@@ -18,7 +18,7 @@ Setup must be run before any other plugin command. It is safe to re-run at any t
 1. **MCP gate**: Verify both required MCPs are reachable before doing any work.
 
    Run two checks in parallel:
-   - Call `list_brand_kits` (Brand Kit OS MCP). If it errors or returns empty, output: "Brand Kit OS MCP is not connected. Enable it in your Claude MCP settings at brandkitos.com, then re-run /setup."
+   - Call `list_brand_kits` (Brand Kit OS MCP). If it errors, output: "Brand Kit OS is not connected yet. In Claude Code run `/mcp`, select `brand-kit-os` and choose Authenticate; in Claude Desktop or Cowork click Connect. Any Brand Kit OS plan works. Then re-run /setup." If it returns empty, continue: Step 2 handles a missing brand kit.
    - Call `leafpad_list_organizations` (Leafpad MCP). If it errors, output: "Leafpad MCP is not connected. Enable it in your Leafpad account settings, then re-run /setup."
 
    If either check fails, stop. Do not proceed to Step 2.
@@ -72,7 +72,7 @@ Setup must be run before any other plugin command. It is safe to re-run at any t
      "active_brand_kit_id": "<from step 2>",
      "active_brand_kit_slug": "<from step 2>",
      "active_leafpad_org": "<from step 3>",
-     "plugin_version": "1.8.0",
+     "plugin_version": "1.9.0",
      "setup_completed_at": "<today's date ISO 8601>",
      "setup_completed_by": "setup-command"
    }
@@ -161,9 +161,10 @@ Setup must be run before any other plugin command. It is safe to re-run at any t
 
 ## Handling failures
 
-- **Brand Kit OS returns `403`**: the API key is valid but this client isn't allowlisted.
-  Sandboxed Claude Code environments can be blocked; Claude Desktop is typically allowlisted.
-  Tell the user to contact Brand Kit OS to allowlist the host. Do not treat this as a bad key.
+- **Brand Kit OS returns `401`**: not signed in. Have the user sign in (`/mcp` → Authenticate
+  in Claude Code; Connect in Claude Desktop or Cowork), then re-run.
+- **Brand Kit OS returns `403`**: this is not a plan limit; every plan can connect. Have the
+  user sign in again once; if it persists, tell them to contact Brand Kit OS support.
 - **Leafpad OAuth doesn't complete**: have them retry; the token caches after a successful
   sign-in.
 
