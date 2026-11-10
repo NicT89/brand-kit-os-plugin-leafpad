@@ -16,7 +16,7 @@ platform-native mirrors derived from it) carries the rules the agent should foll
 
 | Server | Endpoint | Transport | Auth |
 |---|---|---|---|
-| **Brand Kit OS** | `https://www.brandkitos.com/mcp` | Streamable HTTP | `Authorization: Bearer <BRAND_KIT_API_KEY>` |
+| **Brand Kit OS** | `https://www.brandkitos.com/mcp` | Streamable HTTP | Claude: OAuth sign-in (browser, no key). Other hosts: `Authorization: Bearer <BRAND_KIT_API_KEY>` |
 | **Leafpad** | `https://leafpad.io/mcp` | Streamable HTTP | OAuth (browser sign-in on first connect; token cached by the host) |
 
 Two host-dependent caveats:
@@ -40,8 +40,10 @@ README**. Run this interview (the machine-readable version is
 
 1. **Detect the platform.** Identify which host you're running in (it determines the config
    file path and whether Leafpad OAuth needs a bridge). If you can't tell, ask.
-2. **Brand Kit OS API key.** Ask the user for their Brand Kit OS API key (from
-   <https://brandkitos.com/settings> → API Keys; requires a Base or Premium plan). This is a
+2. **Brand Kit OS API key (non-Claude hosts only).** In Claude, skip this step: the plugin
+   signs in to Brand Kit OS through the browser on first use. Elsewhere, ask the user for their
+   Brand Kit OS API key (from <https://brandkitos.com/settings> → API Keys; any plan can create
+   one, and saving changes through it needs a paid plan). This is a
    secret — never echo it back or write it to a committed file. Store it via the platform's
    env-var / secret mechanism, referenced as `${BRAND_KIT_API_KEY}` in config.
 3. **Default publish mode.** Ask which default to use for publishing: `draft` (recommended —

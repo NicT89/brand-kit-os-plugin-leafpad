@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.9.0 - 2026-11-10
+
+Brand Kit OS signs in through the browser in Claude. No API key needed.
+
+- **Sign-in instead of an API key.** The plugin no longer asks for a Brand Kit OS API key at
+  install and no longer sends one. Claude signs in to Brand Kit OS with OAuth the first time it
+  connects (Claude Code: `/mcp`, then Authenticate; Claude Desktop or Cowork: click Connect), the
+  same way Leafpad already worked. Any Brand Kit OS plan works, including free.
+- **Removed `brand_kit_api_key` from `userConfig`.** `publish_mode` is unchanged.
+- **Fixed: both MCP servers now declare `"type": "http"`.** Without it Claude parses a `url`
+  entry as a stdio server and can drop it at load, so the plugin could start with neither
+  server connected. `claude plugin validate --strict` reported this as an error.
+- **Docs.** README, `docs/install/claude.md`, `AGENTS.md` and `docs/setup/setup-spec.json` no
+  longer say MCP needs a Base or Premium plan. Non-Claude hosts (Cursor, VS Code, Gemini and
+  others) still connect with an API key header, which any plan can create.
+- **`/doctor`** checks the Brand Kit OS connection is signed in rather than that a key is set.
+- **Version bump.** `1.8.0` to `1.9.0`. Existing installs: after updating, run `/mcp` and
+  Authenticate `brand-kit-os` once.
+
 ## 1.8.0 - 2026-08-12
 
 Setup-first onboarding, guided source discovery, and a bundled trusted-sources library.

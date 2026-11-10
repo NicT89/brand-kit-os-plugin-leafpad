@@ -44,7 +44,7 @@ Run each check and report a green/yellow/red status with a fix for anything not 
    - 🟡 Missing → "No sources registry. Topic research will fall back to web search. Want me to help you create one? (see the topic-sourcing skill)"
    - 🔴 Exists but invalid JSON/schema → show the validation error.
 
-6. **Config** — Confirm `publish_mode` is set and report its value. Confirm the BKOS API key is configured (don't print it).
+6. **Config**: Confirm `publish_mode` is set and report its value. Confirm Brand Kit OS is signed in (the `brand-kit-os` MCP server answers a read).
 
 7. **Plugin version check** — Compare the installed version against the latest GitHub release.
    - The current installed version of this plugin is `1.8.0`. Update this constant in lockstep with `plugin.json` on every release.
@@ -64,7 +64,7 @@ Brand Kit OS + Leafpad — Health Check
 🟡 Brand completeness  Governance populated; personas empty
 🟢 Leafpad content     14 existing posts · Knowledge Base populated
 🟡 Sources registry    Not found — topic research will use web search only
-🟢 Config              publish_mode=draft · API key set
+🟢 Config              publish_mode=draft · Brand Kit OS signed in
 🟢 Plugin version      v1.8.0 · up to date
 
 Punch list:

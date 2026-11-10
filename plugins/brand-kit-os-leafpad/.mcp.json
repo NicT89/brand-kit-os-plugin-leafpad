@@ -1,12 +1,11 @@
 {
   "mcpServers": {
     "brand-kit-os": {
-      "url": "https://www.brandkitos.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${user_config.brand_kit_api_key}"
-      }
+      "type": "http",
+      "url": "https://www.brandkitos.com/mcp"
     },
     "leafpad": {
+      "type": "http",
       "url": "https://leafpad.io/mcp"
     }
   }

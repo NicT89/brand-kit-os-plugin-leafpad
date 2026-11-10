@@ -28,7 +28,7 @@
     },
     {
       "key": "brand_kit_api_key",
-      "prompt": "Paste your Brand Kit OS API key (from https://brandkitos.com/settings -> API Keys; requires a Base or Premium plan).",
+      "prompt": "Paste your Brand Kit OS API key (from https://brandkitos.com/settings -> API Keys; any plan can create one). Not needed in Claude, which signs in through the browser.",
       "type": "secret",
       "required": true,
       "handling": "Treat as a secret. Never echo it back, never write it into a file that will be committed. Store via the platform's env var / secret store and reference as ${BRAND_KIT_API_KEY}."
