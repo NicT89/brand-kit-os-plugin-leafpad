@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.10.1 - 2026-11-11
+
+Verified the curated RSS feeds in `references/trusted-sources/default-sources.json` with feedparser and corrected or pruned the broken ones.
+
+- **Fixed (feed URL corrected and re-validated):**
+  - First Round Review: `review.firstround.com/rss.xml` to `review.firstround.com/glossary/rss/`.
+  - Ben's Bites: moved from the retired beehiiv feed to `bensbites.com/feed` (now on Substack).
+  - Brand New (UnderConsideration): `brandnew/index.rdf` to `brandnew/atom.xml`.
+- **Removed (no working public feed found):** Anthropic Blog (no public RSS), LangChain Blog (dev blog retired; old feed redirects to a non-feed page), The Neuron (feed endpoint dead), Indie Hackers (no public RSS). Feed count 28 to 24.
+- **Kept as-is:** feeds that are live for real users but unreachable from the CI network due to rate-limiting or bot protection (VentureBeat AI, Marketing Week, Content Marketing Institute, a16z, and the Reddit feeds). These were not removed.
+
 ## 1.10.0 - 2026-11-11
 
 Brand Kit OS signs in through the browser in Claude. No API key needed.
