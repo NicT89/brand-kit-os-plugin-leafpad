@@ -49,12 +49,12 @@ Run each check and report a green/yellow/red status with a fix for anything not 
 6. **Config**: Confirm `publish_mode` is set and report its value. Confirm Brand Kit OS is signed in (the `brand-kit-os` MCP server answers a read).
 
 7. **Plugin version check** — Compare the installed version against the latest GitHub release.
-   - The current installed version of this plugin is `1.9.0`. Update this constant in lockstep with `plugin.json` on every release.
+   - The current installed version of this plugin is `1.10.0`. Update this constant in lockstep with `plugin.json` on every release.
    - Fetch the latest release via WebFetch: `GET https://api.github.com/repos/NicT89/brand-kit-os-plugin-leafpad/releases/latest`
      Parse the `tag_name` field (strip a leading `v` if present for comparison).
-   - 🟢 Installed version matches or exceeds latest → "Plugin is up to date (v1.9.0)"
-   - 🟡 Installed is behind latest → "Plugin v1.9.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins."
-   - 🔴 GitHub API unreachable or returns an error → "Version check skipped: network unavailable. Installed: v1.9.0"
+   - 🟢 Installed version matches or exceeds latest → "Plugin is up to date (v1.10.0)"
+   - 🟡 Installed is behind latest → "Plugin v1.10.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins."
+   - 🔴 GitHub API unreachable or returns an error → "Version check skipped: network unavailable. Installed: v1.10.0"
 
 ## Output format
 
@@ -67,12 +67,12 @@ Brand Kit OS + Leafpad — Health Check
 🟢 Leafpad content     14 existing posts · Knowledge Base populated
 🟡 Sources registry    Not found — topic research will use web search only
 🟢 Config              publish_mode=draft · Brand Kit OS signed in
-🟢 Plugin version      v1.9.0 · up to date
+🟢 Plugin version      v1.10.0 · up to date
 
 Punch list:
 1. [registry] Run setup to add trusted sources → better topic ideas. Want me to start?
 2. [personas] Optional: add AI personas in Brand Kit OS for byline attribution.
-3. [version] Plugin v1.9.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins.
+3. [version] Plugin v1.10.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins.
 
 You're ready to create content. Try:
   /brand-kit-os-leafpad:plan-week

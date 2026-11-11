@@ -72,7 +72,7 @@ Setup must be run before any other plugin command. It is safe to re-run at any t
      "active_brand_kit_id": "<from step 2>",
      "active_brand_kit_slug": "<from step 2>",
      "active_leafpad_org": "<from step 3>",
-     "plugin_version": "1.9.0",
+     "plugin_version": "1.10.0",
      "setup_completed_at": "<today's date ISO 8601>",
      "setup_completed_by": "setup-command"
    }
