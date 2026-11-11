@@ -26,10 +26,9 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 
 ## Prerequisites
 
-1. A Brand Kit OS account with a **Base or Premium** plan
-2. An API key from [Settings → API Keys](https://brandkitos.com/settings)
-3. Claude Desktop with Cowork mode, or Claude Code — both connect via the native HTTP MCP transport
-4. A browser for first-time Leafpad sign-in — Leafpad MCP uses OAuth on first connect; the token is cached by the host afterward
+1. A Brand Kit OS account (the free plan works; no API key is needed)
+2. Claude Desktop with Cowork mode, or Claude Code: both connect via the native HTTP MCP transport
+3. A browser for first-time sign-in to Brand Kit OS and Leafpad. Both use OAuth on first connect; Leafpad MCP uses OAuth on first connect; the token is cached by the host afterward
 
 ## Install
 
@@ -43,7 +42,7 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
    ```
    /plugin install brand-kit-os-leafpad@brand-kit-os-leafpad
    ```
-3. When prompted, paste your Brand Kit OS API key and pick a default `publish_mode` (`draft`, `published`, or `scheduled`).
+3. When prompted, pick a default `publish_mode` (`draft`, `published`, or `scheduled`). The first time Claude uses Brand Kit OS or Leafpad it asks you to sign in to each.
 4. Restart Claude. Ask "What brands do I have?" to verify.
 
 ## Publishing
@@ -89,7 +88,7 @@ platform's native instructions format. Per-platform guides live in
 
 | Platform | Plugin? | Brand Kit OS | Leafpad | Intelligence ported as |
 |---|---|---|---|---|
-| [Claude](docs/install/claude.md) (Code + Desktop/Cowork) | ✅ native | Bearer | OAuth (native) | the plugin |
+| [Claude](docs/install/claude.md) (Code + Desktop/Cowork) | ✅ native | OAuth (native, no key) | OAuth (native) | the plugin |
 | [Cursor](docs/install/cursor.md) | MCP + rules | `headers` | OAuth (native) | `.cursor/rules/*.mdc` |
 | [OpenAI Codex CLI](docs/install/codex.md) | MCP + AGENTS.md | `bearer_token` | OAuth via `mcp-remote` | `AGENTS.md` |
 | [ChatGPT](docs/install/chatgpt.md) (Developer Mode) | connectors | API-key | OAuth | custom GPT / Project instructions |

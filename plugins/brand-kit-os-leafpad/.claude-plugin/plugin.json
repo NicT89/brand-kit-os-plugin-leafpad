@@ -1,6 +1,6 @@
 {
   "name": "brand-kit-os-leafpad",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Brand context, voice enforcement, and Leafpad blog publishing for Claude — powered by Brand Kit OS.",
   "author": {
     "name": "Nicolas Thatcher",
@@ -10,12 +10,6 @@
   "repository": "https://github.com/NicT89/brand-kit-os-plugin-leafpad",
   "license": "MIT",
   "userConfig": {
-    "brand_kit_api_key": {
-      "type": "string",
-      "title": "Brand Kit OS API key",
-      "description": "Your Brand Kit OS API key (get one at https://brandkitos.com/settings → API Keys)",
-      "sensitive": true
-    },
     "publish_mode": {
       "type": "string",
       "title": "Default publish mode",

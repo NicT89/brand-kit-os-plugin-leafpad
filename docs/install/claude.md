@@ -13,20 +13,19 @@ In Claude Code or Claude Desktop (Cowork):
 /plugin install brand-kit-os-leafpad@brand-kit-os-leafpad
 ```
 
-When prompted (driven by `userConfig` in the plugin manifest):
+When prompted (driven by `userConfig` in the plugin manifest), choose the **default publish
+mode**: `draft` (recommended), `published`, or `scheduled`. There is no API key to paste.
 
-1. **Brand Kit OS API key** — paste it (stored as a secret; from
-   <https://brandkitos.com/settings> → API Keys).
-2. **Default publish mode** — `draft` (recommended), `published`, or `scheduled`.
-
-Then **restart Claude**. Verify with: *"What brands do I have?"* (runs `list_brand_kits`). The
-first Leafpad action opens a browser for OAuth; the token is cached afterward.
+Then **restart Claude** and sign in to both services the first time Claude asks. In Claude Code,
+run `/mcp`, select `brand-kit-os` and choose **Authenticate** (then the same for `leafpad`); in
+Claude Desktop or Cowork, click **Connect** when prompted. Any Brand Kit OS plan works, including
+free. Verify with: *"What brands do I have?"* (runs `list_brand_kits`).
 
 ## Option B — Manual upload (Claude Desktop / Cowork)
 
 Download the `plugins/brand-kit-os-leafpad` folder and upload it via
 **Cowork → Customize → Browse plugins → Upload plugin**. You'll be prompted for the same two
-config values.
+config value (publish mode).
 
 ## What you get
 
@@ -39,17 +38,14 @@ config values.
 ## How the MCP servers are configured
 
 The plugin's [`.mcp.json`](../../plugins/brand-kit-os-leafpad/.mcp.json) declares both servers;
-Claude's runtime resolves the API key from your `userConfig` and handles Leafpad's OAuth
-natively. No `mcp-remote` bridge is needed.
+Claude handles the OAuth sign-in for both natively. No API key and no `mcp-remote` bridge is
+needed.
 
 ```json
 {
   "mcpServers": {
-    "brand-kit-os": {
-      "url": "https://www.brandkitos.com/mcp",
-      "headers": { "Authorization": "Bearer ${user_config.brand_kit_api_key}" }
-    },
-    "leafpad": { "url": "https://leafpad.io/mcp" }
+    "brand-kit-os": { "type": "http", "url": "https://www.brandkitos.com/mcp" },
+    "leafpad": { "type": "http", "url": "https://leafpad.io/mcp" }
   }
 }
 ```
@@ -57,15 +53,20 @@ natively. No `mcp-remote` bridge is needed.
 ### Adding just the servers (without the plugin), Claude Code CLI
 
 ```bash
-claude mcp add --transport http brand-kit-os https://www.brandkitos.com/mcp \
-  --header "Authorization: Bearer $BRAND_KIT_API_KEY"
+claude mcp add --transport http brand-kit-os https://www.brandkitos.com/mcp
 claude mcp add --transport http leafpad https://leafpad.io/mcp
 ```
 
+Then run `/mcp` and choose **Authenticate** for each. To use an API key instead (scripts or
+automation), add `--header "Authorization: Bearer $BRAND_KIT_API_KEY"` to the first command.
+
 ## Troubleshooting
 
-- **`403` from Brand Kit OS** — your key is valid but this client isn't allowlisted. Sandboxed
-  Claude Code environments can be blocked; Claude Desktop is typically allowlisted. Contact
-  Brand Kit OS to allowlist the host.
-- **No brand summary at startup** — confirm the API key was saved and the `brand-kit-os` server
-  shows connected; re-run `/brand-kit-os-leafpad:setup`.
+- **`401` from Brand Kit OS:** the connection is not signed in yet. Run `/mcp`, select
+  `brand-kit-os` and choose **Authenticate** (Claude Desktop or Cowork: click **Connect**). If you
+  added the server with an API key header, a rejected key does not fall back to sign-in: check
+  the key, or remove the server and add it again without the header.
+- **`403` from Brand Kit OS:** this is not a plan limit; every plan can connect. Contact
+  Brand Kit OS support.
+- **No brand summary at startup:** confirm the `brand-kit-os` server shows connected and
+  signed in; re-run `/brand-kit-os-leafpad:setup`.

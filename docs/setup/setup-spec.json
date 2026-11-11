@@ -8,7 +8,7 @@
       "endpoint": "https://www.brandkitos.com/mcp",
       "transport": "http",
       "auth": { "type": "bearer", "header": "Authorization", "value": "Bearer ${BRAND_KIT_API_KEY}" },
-      "notes": "Static API key. Brand Kit OS enforces a host allowlist; a 403 with a valid key means the platform must be allowlisted by Brand Kit OS, not that the key is wrong."
+      "notes": "Claude signs in with OAuth (browser, no key; the plugin's .mcp.json sends no header). Other hosts use this static API key. Brand Kit OS enforces a host allowlist; a 403 with a valid key means the platform must be allowlisted by Brand Kit OS, not that the key is wrong."
     },
     "leafpad": {
       "endpoint": "https://leafpad.io/mcp",
@@ -28,9 +28,10 @@
     },
     {
       "key": "brand_kit_api_key",
-      "prompt": "Paste your Brand Kit OS API key (from https://brandkitos.com/settings -> API Keys; requires a Base or Premium plan).",
+      "prompt": "Paste your Brand Kit OS API key (from https://brandkitos.com/settings -> API Keys; any plan can create one). Not needed in Claude, which signs in through the browser.",
       "type": "secret",
-      "required": true,
+      "required": false,
+      "required_when": { "platform_not": ["claude"] },
       "handling": "Treat as a secret. Never echo it back, never write it into a file that will be committed. Store via the platform's env var / secret store and reference as ${BRAND_KIT_API_KEY}."
     },
     {
@@ -50,7 +51,7 @@
     },
     {
       "id": "collect_api_key",
-      "action": "Ask for `brand_kit_api_key` and store it as the env var BRAND_KIT_API_KEY (or the platform's secret store)."
+      "action": "Skip on Claude: the plugin signs in to Brand Kit OS with OAuth. On other platforms, ask for `brand_kit_api_key` and store it as the env var BRAND_KIT_API_KEY (or the platform's secret store)."
     },
     {
       "id": "collect_publish_mode",
@@ -58,11 +59,15 @@
     },
     {
       "id": "write_config",
-      "action": "Write the MCP config for the resolved platform using docs/install/<platform>.md. Brand Kit OS: HTTP url + Authorization: Bearer ${BRAND_KIT_API_KEY}. Leafpad: HTTP url (OAuth) — except Codex, where Leafpad uses the mcp-remote bridge command."
+      "action": "Write the MCP config for the resolved platform using docs/install/<platform>.md. Brand Kit OS on Claude: HTTP url only, no Authorization header (the plugin's .mcp.json already does this). Elsewhere: HTTP url + Authorization: Bearer ${BRAND_KIT_API_KEY}. Leafpad: HTTP url (OAuth), except Codex, where Leafpad uses the mcp-remote bridge command."
     },
     {
       "id": "reload_host",
       "action": "Tell the user to restart/reload the host so it picks up the new servers."
+    },
+    {
+      "id": "brand_kit_os_oauth",
+      "action": "On Claude only: sign in to Brand Kit OS. In Claude Code run /mcp, select brand-kit-os and choose Authenticate; in Claude Desktop or Cowork click Connect. Any Brand Kit OS plan works, including free."
     },
     {
       "id": "leafpad_oauth",

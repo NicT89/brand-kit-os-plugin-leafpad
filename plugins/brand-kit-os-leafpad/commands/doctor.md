@@ -25,7 +25,9 @@ Run each check and report a green/yellow/red status with a fix for anything not 
 1. **Brand Kit OS connection** — Call `list_brand_kits`.
    - 🟢 Returns one or more kits → list their names/ids
    - 🟡 Returns empty → "Connected, but no brand kits yet. Create one at brandkitos.com."
-   - 🔴 Errors → likely API key or allowlist issue. Show the error and point to README → Prerequisites.
+   - 🔴 `401` / needs authentication → "Brand Kit OS is not signed in. In Claude Code run `/mcp`, select `brand-kit-os` and choose Authenticate; in Claude Desktop or Cowork click Connect. Then re-run." If the user added an API key header themselves, a rejected key does not fall back to sign-in: tell them to check the key or remove the header.
+   - 🔴 `403` → "This is not a plan limit; every plan can connect. Contact Brand Kit OS support." Show the error.
+   - 🔴 Other errors → show the error and point to `docs/install/claude.md` → Troubleshooting.
 
 2. **Leafpad connection** — Call `leafpad_list_organizations`.
    - 🟢 Returns one or more orgs → list them
@@ -44,15 +46,15 @@ Run each check and report a green/yellow/red status with a fix for anything not 
    - 🟡 Missing → "No sources registry. Topic research will fall back to web search. Want me to help you create one? (see the topic-sourcing skill)"
    - 🔴 Exists but invalid JSON/schema → show the validation error.
 
-6. **Config** — Confirm `publish_mode` is set and report its value. Confirm the BKOS API key is configured (don't print it).
+6. **Config**: Confirm `publish_mode` is set and report its value. Confirm Brand Kit OS is signed in (the `brand-kit-os` MCP server answers a read).
 
 7. **Plugin version check** — Compare the installed version against the latest GitHub release.
-   - The current installed version of this plugin is `1.8.0`. Update this constant in lockstep with `plugin.json` on every release.
+   - The current installed version of this plugin is `1.10.0`. Update this constant in lockstep with `plugin.json` on every release.
    - Fetch the latest release via WebFetch: `GET https://api.github.com/repos/NicT89/brand-kit-os-plugin-leafpad/releases/latest`
      Parse the `tag_name` field (strip a leading `v` if present for comparison).
-   - 🟢 Installed version matches or exceeds latest → "Plugin is up to date (v1.8.0)"
-   - 🟡 Installed is behind latest → "Plugin v1.8.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins."
-   - 🔴 GitHub API unreachable or returns an error → "Version check skipped: network unavailable. Installed: v1.8.0"
+   - 🟢 Installed version matches or exceeds latest → "Plugin is up to date (v1.10.0)"
+   - 🟡 Installed is behind latest → "Plugin v1.10.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins."
+   - 🔴 GitHub API unreachable or returns an error → "Version check skipped: network unavailable. Installed: v1.10.0"
 
 ## Output format
 
@@ -64,13 +66,13 @@ Brand Kit OS + Leafpad — Health Check
 🟡 Brand completeness  Governance populated; personas empty
 🟢 Leafpad content     14 existing posts · Knowledge Base populated
 🟡 Sources registry    Not found — topic research will use web search only
-🟢 Config              publish_mode=draft · API key set
-🟢 Plugin version      v1.8.0 · up to date
+🟢 Config              publish_mode=draft · Brand Kit OS signed in
+🟢 Plugin version      v1.10.0 · up to date
 
 Punch list:
 1. [registry] Run setup to add trusted sources → better topic ideas. Want me to start?
 2. [personas] Optional: add AI personas in Brand Kit OS for byline attribution.
-3. [version] Plugin v1.8.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins.
+3. [version] Plugin v1.10.0 installed: v<latest> available. Update via Settings → Capabilities → Plugins.
 
 You're ready to create content. Try:
   /brand-kit-os-leafpad:plan-week
