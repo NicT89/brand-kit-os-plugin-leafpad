@@ -31,12 +31,6 @@
           "type": "rss"
         },
         {
-          "name": "Anthropic Blog",
-          "url": "https://www.anthropic.com/news",
-          "rss": "https://www.anthropic.com/rss.xml",
-          "type": "rss"
-        },
-        {
           "name": "Ars Technica",
           "url": "https://arstechnica.com",
           "rss": "https://feeds.arstechnica.com/arstechnica/index",
@@ -44,8 +38,8 @@
         },
         {
           "name": "Ben's Bites",
-          "url": "https://bensbites.beehiiv.com",
-          "rss": "https://bensbites.beehiiv.com/feed",
+          "url": "https://bensbites.com",
+          "rss": "https://bensbites.com/feed",
           "type": "rss"
         }
       ]
@@ -87,7 +81,7 @@
         {
           "name": "Brand New (UnderConsideration)",
           "url": "https://www.underconsideration.com/brandnew",
-          "rss": "https://www.underconsideration.com/brandnew/index.rdf",
+          "rss": "https://www.underconsideration.com/brandnew/atom.xml",
           "type": "rss"
         }
       ]
@@ -97,15 +91,9 @@
       "description": "SaaS growth, startup strategy, and indie building",
       "sources": [
         {
-          "name": "Indie Hackers",
-          "url": "https://www.indiehackers.com",
-          "rss": "https://www.indiehackers.com/feed.xml",
-          "type": "rss"
-        },
-        {
           "name": "First Round Review",
           "url": "https://review.firstround.com",
-          "rss": "https://review.firstround.com/rss.xml",
+          "rss": "https://review.firstround.com/glossary/rss/",
           "type": "rss"
         },
         {
@@ -139,21 +127,9 @@
           "type": "rss"
         },
         {
-          "name": "LangChain Blog",
-          "url": "https://blog.langchain.dev",
-          "rss": "https://blog.langchain.dev/rss/",
-          "type": "rss"
-        },
-        {
           "name": "OpenAI Blog",
           "url": "https://openai.com/blog",
           "rss": "https://openai.com/blog/rss.xml",
-          "type": "rss"
-        },
-        {
-          "name": "The Neuron",
-          "url": "https://www.theneurondaily.com",
-          "rss": "https://www.theneurondaily.com/feed",
           "type": "rss"
         }
       ]
