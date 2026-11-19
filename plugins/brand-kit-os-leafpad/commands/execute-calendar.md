@@ -59,4 +59,4 @@ Calendar updated: ~/.brand-kit-os-leafpad/calendars/week-2026-06-15.json
 
 ## Routine automation
 
-To run this on a schedule (e.g., every Monday), see `docs/routines/weekly-3-articles.md` — it shows how to wire `/plan-week` + `/execute-calendar` into a Claude Cowork scheduled session.
+For the recurring two-posts-a-week flow, use `/brand-kit-os-leafpad:weekly-schedule` and see `docs/routines/weekly-leafpad-scheduler.md` for Routine prompts.
