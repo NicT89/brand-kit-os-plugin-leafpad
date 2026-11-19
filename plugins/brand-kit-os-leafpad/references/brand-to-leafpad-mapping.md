@@ -87,7 +87,7 @@ There is no `scheduled_at`, `secondary_prompt` or `organization_id` parameter. O
 | `leafpad_delete_scheduled_posts({ organization_slug, scheduled_post_ids })` | Remove pending rows (1 to 50). Never charged; rows that already ran are kept as history. |
 | `leafpad_schedule_rewrites({ organization_slug, rewrites: [{ post_id, date, instructions, target_keywords, url, volume, kd, intent }] })` | AI rewrite of an existing post, published in place. Uses the daily update allowance and, on a paid plan, a refresh credit. |
 
-Before adding a row, always check the queue: if a pending row already holds the target slot, update it instead of adding a second one.
+Before adding a row, always check the queue: if a pending new-post row already holds the target slot, update it with the new-post fields instead of adding a second one. Never send new-post fields to a rewrite row; report that conflict instead.
 
 ## Images — `leafpad_generate_image`
 

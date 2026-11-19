@@ -36,11 +36,14 @@ filling in its entry and setting `enabled: true`.
 1. Compute the two slots from `cadence`: the Tuesday and Thursday of the target week at
    `local_time` in `timezone`, converted to UTC with `Z`. For 09:00 America/Chicago that is
    `15:00Z` in CST and `14:00Z` in CDT.
-2. `leafpad_list_scheduled_posts` with `include_completed: true`, `from_date` the first of the
-   month and `to_date` the end of the month. Count "new post" rows. If adding two would pass
-   `monthly_post_allocation`, schedule only what fits and say so.
-3. For each slot, `leafpad_list_scheduled_posts` with `from_date` and `to_date` 12 hours either
+2. For each slot, `leafpad_list_scheduled_posts` with `from_date` and `to_date` 12 hours either
    side of it. A **pending** "new post" row there is updated in step 7, not duplicated.
+3. For each calendar month the slots fall in (a week can span two),
+   `leafpad_list_scheduled_posts` with `include_completed: true`, `from_date` the first of that
+   month and `to_date` its end. Count "new post" rows plus rows that already generated a post
+   (they turn into "publish existing post" with a post id). Only slots that need a new row
+   count against `monthly_post_allocation`; updating a pending row does not. If the new rows
+   would pass the allocation, add only what fits and say so.
 
 ### 2. Brand Kit OS context
 
@@ -74,8 +77,9 @@ Gather candidates from all of these, labelling each with its source:
 2. **Search Console gaps**: `leafpad_get_search_console_data` with `dimensions: ["query"]`,
    `days: 28`, `row_limit: 500`. Keep queries with impressions and no post whose title or slug
    matches. Leafpad's connected property is the near-empty URL-prefix property
-   (`https://brandkitos.com/`); when the Supermetrics connector is present, also query
-   `sc-domain:brandkitos.com` (ds `GW`) the way `/brand-kit-os-leafpad:blog-analytics` does.
+   (`https://brandkitos.com/`); when the Supermetrics connector is present, also query the
+   config's `search_console.supermetrics_account` (`sc-domain:brandkitos.com`, ds `GW`) the way
+   `/brand-kit-os-leafpad:blog-analytics --brand <key>` does.
 3. **Leafpad company data** from step 3: launches and product facts worth a post.
 4. **Fresh research**: a web or news search for the brand's themes (from the kit's `seo`
    keywords and `content_categories`) over the last 14 days. Open every URL you plan to cite.
@@ -99,9 +103,9 @@ Follow `references/scheduled-brief-template.md` exactly:
 - `date`: the slot from step 1.
 - `prompt`: all 11 parts. Internal links come from step 3's slug list, in absolute
   `site_base_url` + `blog_path` + slug form. CTA is `cta_url`.
-- `volume`, `kd`: from Leafpad research, Google Trends, or a keyword planner when connected.
-  Search Console impressions are not volume. Omit only when unknown, and list the gap in the
-  report.
+- `volume`, `kd`: from Leafpad research or a keyword planner when connected. Search Console
+  impressions and Google Trends scores are not volume. Omit only when unknown, and list the
+  gap in the report.
 - `intent`, `post_type` (`ARTICLE`), and `parent_id` / `parent_scheduled_post_id` when the
   topic belongs to an existing pillar folder.
 
@@ -112,7 +116,7 @@ Run `check_draft` on each brief's prose parts (angle, sections, voice notes) wit
 
 For each slot:
 
-- **Pending row exists**: `leafpad_update_scheduled_post` with `organization_slug`,
+- **Pending new-post row from step 1**: `leafpad_update_scheduled_post` with `organization_slug`,
   `scheduled_post_id` and every field (`date`, `title`, `prompt`, `volume`, `kd`, `intent`,
   `post_type`, `parent_id`, `parent_scheduled_post_id`).
 - **No row**: `leafpad_add_scheduled_posts` with `organization_slug` and
@@ -128,7 +132,7 @@ evidence.
 
 ### 9. Weekly analytics section
 
-Run the summary form of `/brand-kit-os-leafpad:blog-analytics` (last 7 and 28 days): the
+Run the summary form of `/brand-kit-os-leafpad:blog-analytics --brand <key>` (last 7 and 28 days): the
 top posts by clicks, posts that moved most, and up to three query gaps that informed or could
 inform topic choice.
 

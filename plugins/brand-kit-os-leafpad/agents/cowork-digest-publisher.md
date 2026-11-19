@@ -21,7 +21,7 @@ The agent writes the full article, validates, and calls `leafpad_create_post` wi
 
 ### Scheduled mode
 
-When the user asks to schedule rather than draft now, the agent selects a topic, writes a full brief per `../references/scheduled-brief-template.md`, and calls `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title (target keyword), date, prompt, volume, kd, intent, post_type }]`. Leafpad generates the content later, charges $1 when it runs, and on the `brand-kit-os` account publishes it immediately. Check `leafpad_list_scheduled_posts` first and update a pending row for the same slot with `leafpad_update_scheduled_post` instead of adding a duplicate.
+When the user asks to schedule rather than draft now, the agent selects a topic, writes a full brief per `../references/scheduled-brief-template.md`, and calls `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title (target keyword), date, prompt, volume, kd, intent, post_type }]`. Leafpad generates the content later, charges $1 when it runs, and on the `brand-kit-os` account publishes it immediately. Check `leafpad_list_scheduled_posts` first and update a pending "new post" row for the same slot with `leafpad_update_scheduled_post` instead of adding a duplicate. If a pending row of another type holds the slot, report the conflict instead of changing it.
 
 ## Voice calibration
 

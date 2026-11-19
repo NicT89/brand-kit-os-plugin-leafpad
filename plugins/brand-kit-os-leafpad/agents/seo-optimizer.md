@@ -56,7 +56,9 @@ Takes a drafted article and produces full publish-ready metadata for the **rich-
 
 11. **Compute `canonical_url`** — Omit by default. Only emit if the article explicitly references republishing existing content.
 
-12. **Return a structured patch** — Do not rewrite the article body.
+12. **Check the generated text**: run `check_draft` (`platform: "blog"`) on `seo.title`, `seo.description` and `excerpt`. Fix every hard violation and re-check until `passed` is true.
+
+13. **Return a structured patch**: Do not rewrite the article body.
 
 ## MCP tools used
 

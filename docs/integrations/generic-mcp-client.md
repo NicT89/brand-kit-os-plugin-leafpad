@@ -30,7 +30,7 @@ extra = client.call("get_brand_kit",
 facts = client.call("leafpad_get_company_data", { question: f"What do we know about {topic}?" })
 
 # 3. Draft (HTML), per content-generation.md
-article = model.run(inputs={ topic, brand, facts })
+article = model.run(inputs={ topic, brand, extra, facts })
 
 # 4. Citations, per citation-validator.md (uses web fetch/search + governance)
 article = run_agent("citation-validator.md", article, brand.governance)
@@ -39,9 +39,12 @@ article = run_agent("citation-validator.md", article, brand.governance)
 seo = run_agent("seo-optimizer.md", article, brand)
 seo.feature_image = client.call("leafpad_generate_image", { prompt: seo.image_prompt })
 
-# 6. QA gate: check_draft (mandatory), then quality-assurance.md
-check = client.call("check_draft", { brand_kit_id, draft_text: plain_text(article), platform: "blog" })
-if not check.passed or not run_agent("quality-assurance.md", article, brand).passed: revise()
+# 6. QA gate: check_draft (mandatory), then quality-assurance.md; revise once, stop on a second failure
+for attempt in (1, 2):
+  check = client.call("check_draft", { brand_kit_id, draft_text: plain_text(article), platform: "blog" })
+  if check.passed and run_agent("quality-assurance.md", article, brand).passed: break
+  if attempt == 2: stop("QA failed twice; do not publish")
+  article = revise(article, check)
 
 # 7. Publish (image embedded in html_content; there is no featured-image field)
 result = client.call("leafpad_create_post", {

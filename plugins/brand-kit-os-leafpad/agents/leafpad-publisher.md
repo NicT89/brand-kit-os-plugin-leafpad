@@ -23,7 +23,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 
 ## Workflow
 
-1. **Validate inputs** — For `draft`/`published`, ensure `article.title` and `article.body` are present. For `scheduled`, ensure `schedule.title` and `schedule.date` are present. If a required field is missing, return an error without calling Leafpad.
+1. **Validate inputs**: For `draft`/`published`, ensure `article.title` and `article.body` are present. For `scheduled`, ensure `schedule.title`, `schedule.date` and a non-empty `schedule.prompt` are present. If a required field is missing, return an error without calling Leafpad.
 
 2. **Resolve organization**: If `organization_slug` is not provided, call `leafpad_list_organizations`. If there's exactly one, use it. If multiple, ask the user once.
 
@@ -44,7 +44,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 4. **Dispatch by mode**:
    - `draft` → `leafpad_create_post` with `published: false`
    - `published` → `leafpad_create_post` with `published: true`
-   - `scheduled`: first `leafpad_list_scheduled_posts` for the slot; if a pending row exists, `leafpad_update_scheduled_post` it. Otherwise `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }]` from `schedule`. **`date` is ISO-8601 in UTC with `Z`** (e.g. `2026-11-24T15:00:00Z`). Leafpad **generates** the post on that date from the title and prompt, charges $1, and on the `brand-kit-os` account **publishes it immediately**. No `html_content`/`seo`/`tags` are sent in this mode. Encode the brand voice rules and the word-count/title rules into `schedule.prompt`.
+   - `scheduled`: first `leafpad_list_scheduled_posts` for the slot; if a pending "new post" row exists, `leafpad_update_scheduled_post` it. If the slot holds a pending row of another type (rewrite, publish existing post), do not touch it: report the conflict and stop. Otherwise `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }]` from `schedule`. **`date` is ISO-8601 in UTC with `Z`** (e.g. `2026-11-24T15:00:00Z`). Leafpad **generates** the post on that date from the title and prompt, charges $1, and on the `brand-kit-os` account **publishes it immediately**. No `html_content`/`seo`/`tags` are sent in this mode. Encode the brand voice rules and the word-count/title rules into `schedule.prompt`.
 
 5. **Strip-on-reject retry** — If the Leafpad MCP error message matches any of:
    - `unknown field`

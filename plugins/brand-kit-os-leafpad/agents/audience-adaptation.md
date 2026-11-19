@@ -17,10 +17,10 @@ Adapts content for specific audience personas by loading structured persona data
 
 1. **Load audience data**: Call `get_brand_kit` with `sections: ["audience"]` to retrieve all personas with their demographics, goals, pain points, buying behavior, and preferred channels
 2. **Identify target persona** — Match the user's audience description to the closest persona; if ambiguous, present options and ask
-3. **Load expression context**: Call `get_brand_context_for_agent` with `task_type: "content_generation"` and the target `platform` for the base voice, governance and examples (or `get_brand_kit` with `sections: ["platform_expressions"]` and `platform` for that platform's overrides)
+3. **Load expression context**: Call `get_brand_context_for_agent` with `task_type: "content_generation"` and the target `platform` for the base voice, governance and examples, plus `get_brand_kit` with `sections: ["platform_expressions"]` and `platform` when that platform has overrides
 4. **Map adaptation points** — Identify which tone dimensions, terminology choices, and messaging emphases should shift for this persona
 5. **Apply adaptations** — Adjust content while preserving core brand voice attributes
-6. **Validate**: Ensure adaptations stay within governance constraints, then run `check_draft` on the adapted text with the target `platform`. Fix every hard violation and re-check before returning it
+6. **Validate**: Ensure adaptations stay within governance constraints, then run `check_draft` on the adapted text with the target `platform`. Fix every hard violation and re-check until `passed` is true before returning it
 
 ## MCP tools used
 

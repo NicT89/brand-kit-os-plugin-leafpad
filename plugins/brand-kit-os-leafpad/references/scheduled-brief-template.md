@@ -26,7 +26,7 @@ Options, Knowledge Base); the brief adds the Brand Kit OS layer on top, every ti
 | `title` | Primary target keyword phrase (Leafpad writes the final title) |
 | `date` | ISO 8601 UTC with `Z`. Tuesday and Thursday 09:00 America/Chicago: `15:00Z` in CST (first Sunday of November to second Sunday of March), `14:00Z` in CDT |
 | `prompt` | The full brief (11 parts below) |
-| `volume` | Monthly search volume for the keyword if known (Leafpad research, Google Trends, a keyword planner). Search Console impressions are not search volume. Omit only when genuinely unknown, and say so in the run report |
+| `volume` | Monthly search volume for the keyword if known (Leafpad research or a keyword planner; a Google Trends score is not a volume). Search Console impressions are not search volume. Omit only when genuinely unknown, and say so in the run report |
 | `kd` | Keyword difficulty 0 to 100 if known. Same rule |
 | `intent` | `informational`, `commercial`, `transactional` or `navigational` |
 | `post_type` | `ARTICLE` (or `FOLDER` for a pillar hub) |
@@ -44,7 +44,8 @@ leafpad_add_scheduled_posts({
 
 If `leafpad_list_scheduled_posts` already shows a **pending** "new post" row in the target
 slot, change it with `leafpad_update_scheduled_post({ organization_slug, scheduled_post_id, ... })`
-instead of adding a second row.
+instead of adding a second row. `volume` and `kd` cannot be cleared on update: if the keyword
+changes and its numbers are unknown, delete the row (never charged) and add a new one.
 
 ## The brief (`prompt`): 11 parts, in this order
 
@@ -104,4 +105,5 @@ Write the brief as plain text with a short label per part. Every part is require
   list in part 10 will match by design; ignore matches inside that list only.
 - Every URL in parts 4, 6 and 8 opened and confirmed (internal slugs via `leafpad_list_posts`).
 - `leafpad_list_posts` (search the keyword) and `leafpad_list_scheduled_posts`
-  (`include_completed: true`, last 120 days) show no post or row on the same keyword.
+  (`include_completed: true`, last 120 days) show no post or row on the same keyword, other
+  than the pending row you are about to update.

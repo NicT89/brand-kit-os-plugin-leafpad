@@ -35,9 +35,9 @@ Delegates to the `leafpad-ai-scheduler` agent. The agent:
 
 1. Resolves the active brand kit (`get_agent_briefing`)
 2. Loads brand context (`get_brand_context_for_agent` with `task_type: "content_generation"`, `platform: "blog"`, plus `get_brand_kit` `sections: ["products"]`)
-3. Dedupes against `leafpad_list_posts` and `leafpad_list_scheduled_posts`; if a pending row already holds the slot, updates it with `leafpad_update_scheduled_post` instead of adding one
+3. Dedupes against `leafpad_list_posts` and `leafpad_list_scheduled_posts`, and notes any pending "new post" row that already holds the slot
 4. Composes the brief per `references/scheduled-brief-template.md` (11 parts) and checks its prose with `check_draft`
-5. Calls `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }]`
+5. Updates that pending row with `leafpad_update_scheduled_post` when step 3 found one; only otherwise calls `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }]`
 6. Reports the scheduled post id, every field sent (prompt verbatim), the $1 cost and the auto-publish note
 
 ## Output

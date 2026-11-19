@@ -12,8 +12,8 @@ decided 2026-11-19:
 - **The account auto-publishes at generation** (row 1702 became live post 2198 three minutes
   after its 15:00 UTC slot on 2026-11-18), so a QA run follows each post about 30 minutes later.
 - **Brand:** Brand Kit OS (kit `9d16945f-2bb4-4186-8dde-64afc707db39`, Leafpad org
-  `brand-kit-os`). AutoLogs (org `autologs`) comes later; copy the prompts and change the
-  values in the "Brand settings" block.
+  `brand-kit-os`). AutoLogs (org `autologs`) comes later; see "Adding AutoLogs later" below:
+  the prompt bodies, not only the "Brand settings" blocks, carry Brand Kit OS values.
 
 | Routine | When (America/Chicago) | Cron |
 |---|---|---|
@@ -63,12 +63,14 @@ Write tools you may use: leafpad_add_scheduled_posts and leafpad_update_schedule
 call leafpad_create_post, publish_post, leafpad_delete_scheduled_posts or any Brand Kit OS
 write tool.
 
-1. Slots and budget. Compute both slot datetimes in UTC with Z. Call
-   leafpad_list_scheduled_posts (organization_slug brand-kit-os, include_completed true,
-   from_date the first of this month, to_date the end of this month) and count "new post"
-   rows; schedule only what fits under 30. For each slot, call leafpad_list_scheduled_posts
-   with from_date and to_date 12 hours either side. Remember any PENDING new-post row there:
-   you will update it, not add a second one.
+1. Slots and budget. Compute both slot datetimes in UTC with Z. For each slot, call
+   leafpad_list_scheduled_posts with from_date and to_date 12 hours either side. Remember any
+   PENDING new-post row there: you will update it, not add a second one. Then, for each
+   calendar month the slots fall in (a week can span two), call leafpad_list_scheduled_posts
+   (organization_slug brand-kit-os, include_completed true, from_date the first of that
+   month, to_date the end of that month) and count "new post" rows plus rows that already
+   generated a post (they turn into "publish existing post" with a post id). Only slots that
+   need a new row count against the 30; updating a pending row does not. Add only what fits.
 2. Brand context. get_agent_briefing with the kit id. get_brand_context_for_agent with
    task_type "content_generation" and platform "blog". get_brand_kit with sections
    ["products", "seo", "competitors"]. get_knowledge_file for any file whose relevance_hint
@@ -96,9 +98,9 @@ write tool.
    - title: the primary target keyword phrase (Leafpad writes the final title)
    - date: the slot in UTC with Z
    - prompt: the 11-part brief below
-   - volume and kd: from Leafpad research, Google Trends or a keyword planner if connected.
-     Search Console impressions are not search volume. Omit only when unknown and list it in
-     the report.
+   - volume and kd: from Leafpad research or a keyword planner if connected. Search Console
+     impressions and Google Trends scores are not search volume. Omit only when unknown and
+     list it in the report.
    - intent: informational, commercial, transactional or navigational
    - post_type: ARTICLE (FOLDER only for a pillar hub)
    - parent_id or parent_scheduled_post_id: when the topic belongs to an existing pillar folder
@@ -183,8 +185,9 @@ violation. Never call any other write tool.
      wrong or relative internal links (to the absolute form, or to a real slug on the same
      topic, or remove the link), a missing CTA link, and hard check_draft violations a
      word-level edit fixes (a banned term, an em dash). Keep every data-leafpad-html block
-     unchanged. Send the whole body with leafpad_update_post (organization_slug, post_id,
-     html_content).
+     unchanged. Just before sending, call leafpad_get_post again; if the body differs from
+     what you read in step 2, someone edited it: stop and report instead of overwriting.
+     Send the whole body with leafpad_update_post (organization_slug, post_id, html_content).
    - SEO: if check_draft_seo flags the title or description, or they contain a banned term,
      send seo_title (60 characters or fewer), seo_description (140 to 160 characters, plain
      text) and seo_keywords TOGETHER in one leafpad_update_post call. Never send one alone.
@@ -229,7 +232,8 @@ STANDARD; GA4 data source GAWA, property 503617238; REPORT_CHANNEL <Slack channe
 4. find_pages_needing_attention with organization_slug brand-kit-os, limit 10.
 5. Output one row per post sorted by 28-day clicks: clicks, impressions, CTR, position, 7-day
    and 28-day change, sessions, sign-ups, top three queries with impressions. Include posts
-   with no data as zeros. Never sum or average ctr, position or engagementRate across rows.
+   with no data as zeros, or as n/a when the only Search Console source was Leafpad's
+   URL-prefix property (it does not cover www, so a missing row proves nothing). Never sum or average ctr, position or engagementRate across rows.
 6. Recommendations:
    - up to five new topics: queries with impressions, position worse than 10, no matching post;
    - rewrite proposals for posts with CTR under 1%, position 8 to 20, or on the decay list,
@@ -245,7 +249,13 @@ STANDARD; GA4 data source GAWA, property 503617238; REPORT_CHANNEL <Slack channe
 
 Copy Routines A and B, change the Brand settings block (kit id
 `0315bbb8-e5f3-49de-adf2-9f0bc39d586e`, organization_slug `autologs`, its live URL form and
-CTA, its digest channel or none), and give them their own schedule. In the plugin, fill in
+CTA, its digest channel or none), and give them their own schedule. The settings block alone
+is not enough: the numbered steps also name Brand Kit OS values. Replace every
+`brand-kit-os` organization_slug, `brandkitos.com` URL (internal links, CTA, site pages),
+Brand Kit OS product mention, the digest channel `C0AMKSDCQ5A`, the Search Console account
+`sc-domain:brandkitos.com` and the GA4 property `503617238` in Routine A steps 1, 4, 6 and 9
+and Routine B step 5, or drop the steps that do not apply. A copy that still names Brand Kit
+OS URLs in Routine B will "fix" AutoLogs links to the wrong site. In the plugin, fill in
 and enable the `autologs` entry in `plugins/brand-kit-os-leafpad/references/pipeline-brands.json`.
 
 ## Running it where the plugin is installed

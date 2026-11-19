@@ -17,6 +17,10 @@ Feeds performance back into topic choice. `/brand-kit-os-leafpad:weekly-schedule
 
 ## Sources
 
+The ids below are the Brand Kit OS values. Read the selected brand's `search_console`, `ga4`,
+`site_base_url` and `blog_path` from its config entry and use those instead; skip a source
+whose entry is null and say so in the report.
+
 | Source | When | Call |
 |---|---|---|
 | Leafpad Search Console | Always | `leafpad_get_search_console_data` |
@@ -40,12 +44,12 @@ published date. The live URL is `site_base_url` + `blog_path` + slug
 ### 2. Search Console via Leafpad
 
 - Per page: `leafpad_get_search_console_data` with `dimensions: ["page"]`,
-  `page_contains: "/blogs/"`, `days: 28`, `row_limit: 1000`, `response_format: "json"`.
+  `page_contains: blog_path`, `days: <--days>`, `row_limit: 1000`, `response_format: "json"`.
 - Top queries per page: same call with `dimensions: ["page", "query"]`.
 - Trends: the `["page"]` call four more times with explicit `start_date` / `end_date` for the
   last 7 days, the prior 7, the last 28 and the prior 28. The latest two days are excluded
   because Google is still filling them in.
-- Gaps: `dimensions: ["query"]`, `days: 28`, `row_limit: 1000`.
+- Gaps: `dimensions: ["query"]`, `days: <--days>`, `row_limit: 1000`.
 
 ### 3. Search Console and GA4 via Supermetrics (when connected)
 
@@ -84,7 +88,10 @@ Blog analytics: <brand> · <start> to <end> · Search Console source: Supermetri
 | /blogs/...  |         42 |     3,100 | 1.4%| 11.2 | +8 (+40%)             | +15 (+56%)              |           61 |            2 | q1 (900), q2 (400)  |
 ```
 
-Posts with no Search Console rows still get a row (zeros), so new posts are visible.
+Posts with no Search Console rows still get a row, so new posts are visible: zeros when the
+source covers the site's live host (e.g. Supermetrics `sc-domain`), "n/a" when the only source
+was Leafpad's URL-prefix property, which does not cover `www` and so proves nothing.
+Label the main columns with the `--days` window when it is not 28.
 
 ### 6. Recommendations
 

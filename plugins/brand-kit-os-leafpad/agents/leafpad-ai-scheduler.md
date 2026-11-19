@@ -43,7 +43,7 @@ This agent's job: turn the user's intent (keyword or topic, audience, date) into
 
    ```
    leafpad_add_scheduled_posts({
-     organization_slug: "brand-kit-os",
+     organization_slug: "<resolved organization_slug>",
      posts: [{
        title:  "<target keyword phrase>",
        date:   "2026-11-24T15:00:00Z",
@@ -58,13 +58,13 @@ This agent's job: turn the user's intent (keyword or topic, audience, date) into
    })
    ```
 
-   Updating a pending row instead: `leafpad_update_scheduled_post({ organization_slug, scheduled_post_id, title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id })`. Only the fields given change; `parent_id: 0` removes a parent.
+   Updating a pending row instead: `leafpad_update_scheduled_post({ organization_slug, scheduled_post_id, title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id })`. Only the fields given change, so send every new-post field. When the new post has no parent, send `parent_id: 0` and `parent_scheduled_post_id: 0` to clear the old ones. `volume` and `kd` cannot be cleared: if the keyword changed and its numbers are unknown, delete the row (never charged) and add a new one.
 8. **Confirm**: `leafpad_list_scheduled_posts` for the slot and check the row shows the title, date, prompt and keyword data you sent.
 9. **Report**: the scheduled post id, the date, every field sent (prompt verbatim), the cost ($1 when it runs) and the auto-publish note.
 
 ## Field rules
 
-- `volume` and `kd`: use numbers from Search Console, Leafpad research or another keyword source. Omit only when genuinely unknown, and say so in the report. Never invent them.
+- `volume` and `kd`: use numbers from Leafpad research or a keyword planner. Search Console impressions are not search volume. Omit only when genuinely unknown, and say so in the report. Never invent them.
 - `intent`: always set.
 - `post_type`: `ARTICLE` unless you are scheduling a pillar hub (`FOLDER`).
 - `parent_id` / `parent_scheduled_post_id`: set when the post belongs to an existing pillar cluster.

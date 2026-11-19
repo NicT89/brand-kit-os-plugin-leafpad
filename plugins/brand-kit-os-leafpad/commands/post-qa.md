@@ -73,13 +73,15 @@ Fix only what is mechanical and safe; report everything else for a person.
   broken or relative internal links (to the absolute form, or to a real slug on the same
   topic; remove the link if none fits), a missing CTA link, and hard `check_draft`
   violations that a word-level edit fixes (a banned term, an em dash). Send the whole body
-  back; keep every custom `data-leafpad-html` block unchanged.
+  back; keep every custom `data-leafpad-html` block unchanged. Leafpad has no revision
+  precondition, so call `leafpad_get_post` again just before sending: if the body differs from
+  what step 1 read, someone edited it; stop and report instead of overwriting.
 - **SEO** (`leafpad_update_post` with `seo_title`, `seo_description` and `seo_keywords`
   **together**; sending one alone returns a 422): when `check_draft_seo` flags the title or
   description, or they contain a banned term. Title 60 characters or fewer; description 140
   to 160 characters, plain text.
 - **Tags** cannot be changed through MCP; report tag problems for the Leafpad UI.
-- After any body fix, run `check_draft` again on the new text and `check_draft_seo` again.
+- After any fix, run `check_draft` again on the new text and `check_draft_seo` again.
 - Do not rewrite sections, change the angle, or touch the title beyond a banned term. A post
   that needs that is reported, and a rewrite can be scheduled with `leafpad_schedule_rewrites`
   after a person agrees.

@@ -147,7 +147,9 @@ Leafpad. Honors the user's default publish mode unless overridden for the run.
      post_type, parent_id, parent_scheduled_post_id }]`. `prompt` is the full brief from
      [`references/scheduled-brief-template.md`](plugins/brand-kit-os-leafpad/references/scheduled-brief-template.md).
      Leafpad **generates** the post on that date and charges $1; the `brand-kit-os` account
-     **auto-publishes it at generation** (observed 2026-11-18). No finished body is sent.
+     **auto-publishes it at generation** (observed 2026-11-18). No finished body is sent, so
+     the step 8 gate never sees the generated body: `/post-qa` checks it after it is live. When a
+     post must pass `check_draft` before it is public, use `draft` mode instead.
 
 ---
 

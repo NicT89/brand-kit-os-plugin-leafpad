@@ -21,7 +21,8 @@ Call `get_agent_briefing` first (ask which kit if several; never guess a kit id)
 writing, call `get_brand_context_for_agent` (`task_type: "content_generation"`, `platform`).
 Enforce tone, voice archetype, preferred terminology, negative directory, behavioral
 constraints, compliance and disclosure. Run `check_draft` on every draft before it is shown or
-sent; fix every hard violation and re-check. **Never override governance**: flag conflicts and offer
+sent; fix every hard violation and re-check until `passed` is true; review anything under
+`not_checked` by hand. **Never override governance**: flag conflicts and offer
 an on-brand alternative.
 
 ## Publish pipeline
