@@ -25,11 +25,11 @@ Examples:
 
 ## Workflow
 
-1. **Resolve brand kit** — `get_brand_kit_summary`; if multiple, ask which.
+1. **Resolve brand kit**: `get_agent_briefing` lists kits; if multiple, ask which.
 2. **Load cadence** — Read `topic_cadence` from the sources registry (`~/.brand-kit-os-leafpad/registry.json`). Use it for `count`, preferred days, time, and timezone unless overridden by flags. If no registry, default to 3 posts on Mon/Wed/Fri at 09:00 UTC and suggest the user run setup (see the `topic-sourcing` skill).
 3. **Research topics** — Delegate to the `topic-scout` agent with `count`, `themes`, and `avoid_recent: true`. It returns ranked topic briefs drawing from the registry's trusted sources, company updates (Leafpad KB), content gaps, and trending search.
 4. **Assign slots** — Map the top `count` topics onto the preferred publish days/times starting from `--start`, distributing evenly across the range.
-5. **Write the calendar file** — Save to `~/.brand-kit-os-leafpad/calendars/week-<start-date>.json` (a structured list of `{ title, angle, scheduled_at, audience, keywords, source, citation_candidates }`).
+5. **Write the calendar file**: Save to `~/.brand-kit-os-leafpad/calendars/week-<start-date>.json` (a structured list of `{ title (target keyword), angle, date (ISO 8601 UTC), audience, keywords, intent, volume, kd, source, citation_candidates }`). Leave `volume` and `kd` null when unknown; never invent them.
 6. **Present** — Show the calendar as a readable table and tell the user how to execute it.
 
 ## Output format

@@ -61,7 +61,7 @@ To set up manually (or add sources to an existing registry):
 
 1. Ask for 3–8 industry sources they trust (publications, blogs, newsletters with RSS).
 2. Ask for any authoritative sources they want cited (research orgs, official data).
-3. Pull keyword themes from `get_brand_kit_expression.content_categories` as a starting point for `seo_keyword_clusters`.
+3. Pull keyword themes from `get_brand_kit` with `sections: ["seo", "expression"]` (target keywords and `content_categories`) as a starting point for `seo_keyword_clusters`.
 4. Ask their preferred posting cadence (e.g., 3 posts/week, Mon/Wed/Fri at 9am).
 5. Write the file to `~/.brand-kit-os-leafpad/registry.json` (or per-kit), validated against `references/registry.schema.json`.
 

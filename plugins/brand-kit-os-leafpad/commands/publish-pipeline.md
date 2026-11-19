@@ -25,29 +25,25 @@ If no override is given, the run uses `${user_config.publish_mode}` (default `dr
 
 ## Workflow
 
-1. **Resolve brand kit** — Call `get_brand_kit_summary` for the active brand. If multiple kits exist, call `list_brand_kits` and ask which to use.
+1. **Resolve brand kit**: Call `get_agent_briefing` (no args) to list kits. If multiple kits exist, ask which to use.
 2. **Parse arguments** — Extract topic / brief / source from `$ARGUMENTS` and detect any override flag. If the input is too thin to draft from (e.g. just a single word), ask one short follow-up before proceeding.
 3. **Research the topic (step 1 of drafting)** — Gather credible external grounding before writing:
    - Use the available web research tool — prefer Firecrawl `firecrawl_search` if present, otherwise the built-in web search. Pull 3–5 recent, credible sources; capture each source's title, URL, and a one-line takeaway. These become **citable external links**.
    - Optionally call `leafpad_get_company_data` for the org's own indexed site content to ground claims in existing material.
    - If no web research tool is available, continue without it and note "no external research run" in the report — do not fabricate sources or links.
-4. **Load full brand context in parallel** — pull the breadth of brand data per `references/brand-to-leafpad-mapping.md`:
-   - `get_brand_kit_core` — mission/promise framing for the intro
-   - `get_brand_kit_personality` — tone calibration
-   - `get_brand_kit_expression` — voice, terminology, visual style, content_categories
-   - `get_brand_kit_governance` — constraints, negative directory, disclosure policy
-   - `get_brand_kit_audience` — persona targeting
-   - `get_brand_kit_products` — CTAs, product callouts
-   - `get_brand_kit_personas` — for author byline if the brand uses a named AI persona
-   - `list_knowledge_files` — if the brand has style guides or playbooks; fetch any relevant ones via `get_knowledge_file`
+4. **Load full brand context in parallel**: pull the breadth of brand data per `references/brand-to-leafpad-mapping.md`:
+   - `get_brand_context_for_agent` with `task_type: "content_generation"` and `platform: "blog"`: voice, terminology, governance (negative directory, hard constraints, disclosure policy), expression examples, audience and the knowledge-file index
+   - `get_brand_kit` with `sections: ["core", "personality", "products", "seo"]`: mission framing for the intro, tone calibration, CTAs and product callouts, target keywords
+   - `get_brand_kit` with `sections: ["ai_personas"]` and `view: "index"`: only if the brand writes as a named AI persona
+   - `get_knowledge_file`: any style guide or playbook in the knowledge index whose `relevance_hint` matches
 5. **Gather Leafpad context in parallel** — `leafpad_list_posts` (internal-link candidates) and `leafpad_list_tags` (tag reuse).
 6. **Delegate drafting** — Call the `content-generation` agent with the `blog post` template, passing the full brand context, the research findings, parsed brief, and any loaded knowledge files. Expect a rich-article object back with a **title of 8–12 words**, a **body of 800+ words (target 900+)**, internal links, and **external citation links** from the research.
 7. **Delegate SEO** — Call the `seo-optimizer` agent. Apply its patch onto the rich-article object: `seo` (title/description/keywords), `tags`, `internal_links`, and the brand-styled **feature-image prompt**. Insert internal links into the body where suggested; do not otherwise modify the body.
 8. **Generate the on-brand image (with fallback)** — Try `leafpad_generate_image(organization_slug, prompt)` first (it applies the org's brand palette). **It can return `Unauthorized` server-side** (see `references/brand-to-leafpad-mapping.md`); if so, fall back to a general image generator — **Gamma** (`generate` → read the AI image's `src` on `cdn.gamma.app` from the result JSON) or **Higgsfield** — to get a public image URL. Embed the resulting URL as an `<img>` near the top of the body (no featured-image field exists, so the image lives in the body). If **every** generator fails, continue and emit a manual-image task — a missing image is a warning, not a publish blocker.
-9. **Delegate QA (final audit gate)** — Call the `quality-assurance` agent against `skills/brand-voice-enforcement/references/enforcement-checklist.md`, **including the measured blog SEO & structure gate**: body ≥ 800 words (hard), title 8–12 words (hard), image embedded (warning), external sources cited, 2–4 internal links. If a **Critical** check (length or title) fails, revise once and re-run QA; if it fails twice, stop and surface the report — **do not publish**. A missing image is a warning: flag a manual-image task but allow publish.
+9. **Delegate QA (final audit gate)**: Run `check_draft` on the body (plain text, `platform: "blog"`) and fix every hard violation until `passed` is true. Then call the `quality-assurance` agent against `skills/brand-voice-enforcement/references/enforcement-checklist.md`, **including the measured blog SEO & structure gate**: body ≥ 800 words (hard), title 8–12 words (hard), image embedded (warning), external sources cited, 2–4 internal links. If a **Critical** check (length or title) fails, revise once and re-run QA; if it fails twice, stop and surface the report and **do not publish**. A missing image is a warning: flag a manual-image task but allow publish.
 10. **Publish via `leafpad-publisher`** — Resolve `mode` (override flag wins, else `${user_config.publish_mode}`, default `draft`):
     - `draft` / `published` → pass the full rich-article object; publisher maps it to `leafpad_create_post` (`html_content`, comma-string tags/seo, `published` flag).
-    - `scheduled` → **different path**: pass `{ title, date (ISO-8601 UTC from --schedule), prompt }` where `prompt` is a brand-voice brief built from the loaded context. Publisher calls `leafpad_add_scheduled_posts`; Leafpad generates the post on that date. No finished body is sent in this mode.
+    - `scheduled`: **different path**. Pass `{ title (target keyword), date (ISO-8601 UTC from --schedule), prompt, volume, kd, intent, post_type }` where `prompt` is a full brief per `references/scheduled-brief-template.md`. Publisher calls `leafpad_add_scheduled_posts`; Leafpad generates the post on that date, charges $1, and on this account publishes it immediately. No finished body is sent in this mode.
 11. **Report** — Output the URL / draft id / scheduled date, the mode, the Brand Application Notes, the measured QA numbers (word count, title length), and the `schema_fit` block.
 
 ## Output format
@@ -90,12 +86,12 @@ If anything lands in `schema_fit.stripped`, your Leafpad schema changed — upda
 
 ## When no brand kit is found
 
-If `list_brand_kits` returns no results, inform the user:
+If `get_agent_briefing` lists no kits, inform the user:
 > "No brand kits found. Create a brand kit at brandkitos.com to use the publish pipeline."
 
 ## Rules
 
-1. Always run QA before publishing — never publish on a failing critical check
+1. Always run `check_draft` and QA before publishing: never publish on a failing critical check or a `check_draft` result with `passed: false`
 2. **The audit gate is hard for length & title.** Never publish a blog post under 800 words or with a title outside 8–12 words. Revise once; if still failing, surface the report and stop. A **missing image is a warning, not a block** — flag a manual-image task and allow publish (image generation can fail server-side).
 3. Override flags (`--draft`/`--publish`/`--schedule`) win over `${user_config.publish_mode}` for that single run
 4. **`scheduled` mode does not send a finished body** — it queues a topic + date + brand prompt for Leafpad to generate. The word-count/title gates apply to drafted posts (`draft`/`published`); for scheduled, encode the rules into the generation prompt instead. Note: Leafpad-AI-generated posts do not enforce our title/length rules — the `/sync-brand-to-kb` editorial-feedback doc is how we nudge them.

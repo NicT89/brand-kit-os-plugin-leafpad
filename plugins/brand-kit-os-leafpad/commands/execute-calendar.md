@@ -23,10 +23,10 @@ Examples:
 
 ## Workflow
 
-1. **Load the calendar** — Read the specified (or most recent) calendar file. Validate it has entries with `title` and `scheduled_at`.
+1. **Load the calendar**: Read the specified (or most recent) calendar file. Validate it has entries with `title` and `date` (older calendars used `scheduled_at`; read it as `date`).
 2. **Confirm the plan** — Show the user the list of posts and the chosen mode (`ai-schedule` vs `draft-now`) and confirm before dispatching. This step writes to Leafpad, so confirmation matters.
 3. **Dispatch each entry**:
-   - **`--ai-schedule`** → for each entry, delegate to the `leafpad-ai-scheduler` agent with `{ title, scheduled_at, secondary_prompt (built from the entry's angle/audience/keywords) }`. Leafpad AI-generates the post at the scheduled time.
+   - **`--ai-schedule`**: for each entry, delegate to the `leafpad-ai-scheduler` agent with `{ title, date, prompt (built from the entry's angle, audience and keywords per `references/scheduled-brief-template.md`), volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }`. Leafpad AI-generates the post at the scheduled time and charges $1 per post; this account auto-publishes at generation.
    - **`--draft-now`** → for each entry, run the `/publish-pipeline` flow (`content-generation` → `citation-validator` → `seo-optimizer` → `quality-assurance` → `leafpad-publisher` in `draft` mode). Produces fully brand-crafted drafts immediately.
 4. **Track results** — Collect each dispatch's result (scheduled id or draft URL, plus any errors).
 5. **Report** — A summary table of what was scheduled/drafted, with links and any failures. Update the calendar file to mark each entry's status.
@@ -51,8 +51,8 @@ Calendar updated: ~/.brand-kit-os-leafpad/calendars/week-2026-06-15.json
 ## Rules
 
 1. **Always confirm before dispatching** — this writes to Leafpad. Show the full plan and mode first.
-2. In `--ai-schedule` mode, always pass a brand-aware secondary prompt — never schedule a bare title
-3. In `--draft-now` mode, every post goes through QA before it's saved as a draft
+2. In `--ai-schedule` mode, always pass a full brand-aware brief as `prompt`: never schedule a bare title. Before dispatching, check `leafpad_list_scheduled_posts` and update a pending row for the same slot instead of adding a duplicate
+3. In `--draft-now` mode, every post goes through QA (including `check_draft`) before it's saved as a draft
 4. On a per-entry failure, continue with the rest and report the failures at the end — don't abort the whole calendar
 5. Update the calendar file with each entry's final status so re-running skips completed entries
 6. Never delete the calendar file — the user owns it

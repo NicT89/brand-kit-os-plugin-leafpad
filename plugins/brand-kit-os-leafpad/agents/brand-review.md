@@ -15,7 +15,8 @@ Reviews existing content against brand standards to identify alignment gaps, voi
 
 ## Workflow
 
-1. **Load brand context** — Call `get_brand_kit_expression` and `get_brand_kit_governance` to establish the review baseline
+1. **Load brand context**: Call `get_brand_context_for_agent` with `task_type: "content_generation"` and the content's `platform` to establish the review baseline (voice, governance, banned terms, examples, audience)
+1b. **Run `check_draft`** on the content as plain text with the same `platform`. Every hard violation it returns is a Critical finding; soft violations are Suggested
 2. **Identify content type** — Determine format (email, social, blog, ad) and target audience to select appropriate tone expectations
 3. **Evaluate against checklist** — Run through each item in `skills/brand-voice-enforcement/references/enforcement-checklist.md`
 4. **Score each dimension** — Rate voice compliance, tone alignment, terminology usage, governance adherence
@@ -26,10 +27,9 @@ Reviews existing content against brand standards to identify alignment gaps, voi
 
 | Tool | Purpose |
 |------|---------|
-| `get_brand_kit_expression` | Voice rules, tone dimensions, preferred terminology |
-| `get_brand_kit_governance` | Constraints, negative directory, compliance rules |
-| `get_brand_kit_audience` | Persona context for audience-targeted content |
-| `get_brand_kit_summary` | Quick brand overview for initial orientation |
+| `get_brand_context_for_agent` | Voice rules, tone dimensions, preferred terminology, governance, negative directory, audience |
+| `check_draft` | Deterministic check against anti-slop rules, negative directory and writing constraints |
+| `get_brand_kit` (no `sections`) | Quick brand summary for initial orientation |
 
 ## Output format
 

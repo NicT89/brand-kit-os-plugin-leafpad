@@ -32,12 +32,12 @@ The agent draws from multiple sources and labels each idea with where it came fr
 
 ## Workflow
 
-1. **Load brand context** (lightweight) — `get_brand_kit_summary` (mission, category), `get_brand_kit_audience` (who we're writing for), `get_brand_kit_products` (what we sell), `get_brand_kit_expression.content_categories` (what themes fit).
+1. **Load brand context** (lightweight): `get_brand_kit` with no `sections` (summary: mission, category, primary audiences), then `get_brand_kit` with `sections: ["audience", "products", "seo"]` (who we're writing for, what we sell, target keywords). Use the expression `content_categories` from `get_brand_context_for_agent` (`task_type: "content_generation"`, `platform: "blog"`) for what themes fit and which topics governance rules out.
 2. **Load the sources registry**: Read `~/.brand-kit-os-leafpad/brands/<slug>/sources.json` if present (the `topic-sourcing` skill documents its shape; the legacy `~/.brand-kit-os-leafpad/registry.json` is still honored as a fallback).
 
    If `~/.brand-kit-os-leafpad/brands/<slug>/sources.json` does not exist, auto-scaffold it:
 
-   1. Call `get_brand_kit_expression` with the active `brand_kit_id` to get terminology and content themes.
+   1. Call `get_brand_kit` with the active `brand_kit_id` and `sections: ["expression", "seo"]` to get terminology, content themes and target keywords.
    2. Create the file with this structure:
       ```json
       {
@@ -78,6 +78,8 @@ The agent draws from multiple sources and labels each idea with where it came fr
        This handles encoding, malformed XML, and date normalization automatically. Fall back to WebFetch only if bash is unavailable.
      - `html`: Use WebFetch or `firecrawl_scrape` to extract headlines from the page.
    - `leafpad_list_posts` for what's already covered (dedup + gap analysis)
+   - `leafpad_list_scheduled_posts` (`include_completed: true`, last 120 days) for what is already queued or already generated
+   - `leafpad_get_search_console_data` (`dimensions: ["query"]`) for queries with impressions but no matching post
    - WebSearch for trending angles in the brand's space
 4. **Generate candidate topics** — For each promising thread, draft a topic idea: working title, angle, why-now, and which products/audience it serves.
 5. **Dedup** — Drop or merge ideas too similar to recent Leafpad posts (when `avoid_recent`).
@@ -92,7 +94,9 @@ The agent draws from multiple sources and labels each idea with where it came fr
 
 | Tool | Purpose |
 |------|---------|
-| `get_brand_kit_summary`, `get_brand_kit_audience`, `get_brand_kit_products`, `get_brand_kit_expression` | Brand context for relevance scoring |
+| `get_brand_kit` (summary; `sections: ["audience", "products", "seo"]`), `get_brand_context_for_agent` | Brand context for relevance scoring |
+| `leafpad_list_scheduled_posts` | Dedup against the content calendar |
+| `leafpad_get_search_console_data` | Search demand the blog does not answer yet |
 | `leafpad_get_company_data` | Company updates + news from the org's Knowledge Base |
 | `leafpad_list_posts`, `leafpad_list_tags` | Dedup + content-gap analysis |
 | WebFetch | Pull RSS/news feeds from the trusted-sources registry |

@@ -20,7 +20,7 @@ Strengthens an article's authority and legitimacy by adding **verified outbound 
 
 ## Workflow
 
-1. **Load citation policy** — Read `citation_style_guide` from the local registry (`~/.brand-kit-os-leafpad/registry.json`, see the `topic-sourcing` skill) and `get_brand_kit_governance` for any rules about linking to competitors or required disclosures. If no style guide exists, use sensible defaults (descriptive anchor text, `rel="noopener"`, open authoritative links in same tab, a "Sources" list at the foot for academic/regulated brands).
+1. **Load citation policy**: Read `citation_style_guide` from the local registry (`~/.brand-kit-os-leafpad/registry.json`, see the `topic-sourcing` skill) and the governance block of `get_brand_context_for_agent` (or `get_brand_kit` with `sections: ["governance"]`) for any rules about linking to competitors or required disclosures. If no style guide exists, use sensible defaults (descriptive anchor text, `rel="noopener"`, open authoritative links in same tab, a "Sources" list at the foot for academic/regulated brands).
 2. **Extract factual claims** — Scan the body for statements that benefit from a citation: statistics, market trends, third-party facts, quotes, technical assertions. Skip brand-owned claims (your own product features) — those don't need outbound links.
 3. **Find candidate sources** for each claim:
    - First, the registry's `authoritative_citations` (pre-vetted URLs/domains)
@@ -36,7 +36,7 @@ Strengthens an article's authority and legitimacy by adding **verified outbound 
 
 | Tool | Purpose |
 |------|---------|
-| `get_brand_kit_governance` | Linking constraints, disclosure rules |
+| `get_brand_context_for_agent` / `get_brand_kit` (`sections: ["governance"]`) | Linking constraints, disclosure rules |
 | Firecrawl `firecrawl_search` / WebSearch | Find candidate authoritative sources |
 | Firecrawl `firecrawl_scrape` (preferred) / WebFetch (fallback) | Verify each candidate supports the claim — Firecrawl bypasses the 403s many publishers return to WebFetch |
 

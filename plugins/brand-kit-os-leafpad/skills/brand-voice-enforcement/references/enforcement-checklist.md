@@ -22,6 +22,11 @@ Use this checklist before delivering any brand-aligned content.
 - [ ] Disclosure policy followed (AI disclosure, disclaimers)
 - [ ] Behavioral constraints respected
 
+## Automated check (mandatory)
+
+- [ ] `check_draft` (Brand Kit OS) run on the final text with the target `platform`: `passed` is true, every hard violation fixed, soft violations fixed or kept with a stated reason
+- [ ] Rules listed under `not_checked` reviewed by hand
+
 ## Quality
 
 - [ ] Content serves the stated purpose

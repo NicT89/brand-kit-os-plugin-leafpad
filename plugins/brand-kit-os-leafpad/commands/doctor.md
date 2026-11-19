@@ -34,7 +34,7 @@ Run each check and report a green/yellow/red status with a fix for anything not 
    - 🟡 "Needs authentication" → "Complete the Leafpad OAuth sign-in in your browser, then re-run."
    - 🔴 Errors → show the error; point to the test protocol doc.
 
-3. **Brand kit completeness** — For the active (or each) kit, call `get_brand_kit_summary` and spot-check that `expression`, `governance`, and `audience` are populated (call those getters).
+3. **Brand kit completeness**: For the active (or each) kit, call `get_agent_briefing` with its `brand_kit_id`. It returns per-section health and the next step; report any empty critical section (`expression`, `governance`, `audience`).
    - Report any empty critical section ("Governance is empty — voice enforcement will be weaker").
 
 4. **Leafpad readiness** — Call `leafpad_list_posts` (existing content for internal linking) and `leafpad_get_company_data` with a test question ("What does this company do?").

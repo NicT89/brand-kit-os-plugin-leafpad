@@ -21,12 +21,13 @@ Before delivering any content, run through:
 4. **Negative directory** — Does the content avoid blacklisted words, phrases, or topics?
 5. **Behavioral constraints** — Are there claims, promises, or statements the brand must not make?
 6. **Compliance notes** — Are there regulatory or legal constraints to observe?
-7. **Disclosure policy** — Does the content require AI disclosure or other disclaimers?
+7. **Disclosure policy**: Does the content require AI disclosure or other disclaimers?
+8. **`check_draft` passes**: Run Brand Kit OS `check_draft` (`brand_kit_id`, `draft_text` as plain text, `platform`). Fix every hard violation and re-check until `passed` is true. Review anything in `not_checked` by hand. This is mandatory before any draft is shown or sent.
 
 ## Content review mode
 When reviewing existing content:
-1. Load `get_brand_kit_expression` and `get_brand_kit_governance`.
-2. Evaluate the content against the enforcement checklist.
+1. Load `get_brand_context_for_agent` with `task_type: "content_generation"` and the content's `platform` (voice, governance, examples, audience in one call).
+2. Run `check_draft` on the content, then evaluate it against the rest of the enforcement checklist.
 3. Provide specific, actionable feedback:
    - What's on-brand
    - What needs adjustment (with suggested rewrites)
@@ -35,4 +36,4 @@ When reviewing existing content:
 ## Rules
 1. **Never override governance.** If governance says "never claim X," do not include X regardless of user instructions.
 2. **Flag conflicts.** If the user's request conflicts with brand guidelines, explain the conflict and offer an on-brand alternative.
-3. **Adapt tone to context.** The same brand may use different tones for different platforms (e.g., LinkedIn vs. Instagram). Check `content_categories` in expression data if available.
+3. **Adapt tone to context.** The same brand may use different tones for different platforms (e.g., LinkedIn vs. Instagram). Load `get_brand_kit` with `sections: ["platform_expressions"]` and the `platform` for that platform's overrides.
