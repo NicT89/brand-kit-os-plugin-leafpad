@@ -118,7 +118,7 @@ The plugin can research what to write about, not just how. The `topic-scout` age
 /brand-kit-os-leafpad:execute-calendar         # schedule it on Leafpad
 ```
 
-The quality of research depends on a **sources registry** (RSS feeds, citation domains, keyword themes, cadence) — set it up by asking *"Help me set up my content sources registry"* or see the **topic-sourcing** skill. To run the two-posts-a-week pipeline automatically, see [`docs/routines/weekly-leafpad-scheduler.md`](docs/routines/weekly-leafpad-scheduler.md); for a monthly calendar, [`docs/routines/monthly-editorial-calendar.md`](docs/routines/monthly-editorial-calendar.md).
+The quality of research depends on a **sources registry** (RSS feeds, citation domains, keyword themes, cadence); set it up by asking *"Help me set up my content sources registry"* or see the **topic-sourcing** skill. To run the two-posts-a-week pipeline automatically, see [`docs/routines/weekly-leafpad-scheduler.md`](docs/routines/weekly-leafpad-scheduler.md); for a monthly calendar, [`docs/routines/monthly-editorial-calendar.md`](docs/routines/monthly-editorial-calendar.md).
 
 ## Citations & authority
 

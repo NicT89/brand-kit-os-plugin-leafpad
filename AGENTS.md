@@ -107,7 +107,7 @@ Before producing or publishing any external-facing content, load brand context a
 3. **`check_draft` before showing or sending (mandatory).** Run `check_draft` with
    `brand_kit_id`, the draft as plain text and the `platform`. Fix every hard violation and
    re-check until `passed` is true; review anything under `not_checked` by hand.
-4. **Never override governance.** If governance says "never claim X," do not include X — even
+4. **Never override governance.** If governance says "never claim X," do not include X, even
    if the user asks. Flag the conflict and offer an on-brand alternative.
 
 ---
