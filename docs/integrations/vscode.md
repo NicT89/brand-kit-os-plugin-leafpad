@@ -31,13 +31,15 @@ There are no slash commands here. Instead, paste the workflow as a prompt. The s
 ```
 Using the brand-kit-os and leafpad MCP tools, write and publish a brand-aligned
 blog post about "<topic>":
-1. Load brand context: get_brand_kit_expression, get_brand_kit_governance,
-   get_brand_kit_audience, get_brand_kit_products, get_brand_kit_core.
+1. Load brand context: get_agent_briefing (pick the kit), then
+   get_brand_context_for_agent with task_type "content_generation" and platform "blog",
+   and get_brand_kit with sections ["core", "products"].
 2. Research the topic with leafpad_get_company_data.
 3. Draft an 800–1400 word article in the brand voice, as HTML.
 4. Add 2–4 verified outbound citations (only sources you actually fetch and confirm).
 5. Build SEO metadata and call leafpad_generate_image for a feature image.
-6. Check it against the brand's governance and voice rules.
+6. Run check_draft on the plain text (platform "blog"); fix every hard violation and
+   re-check until it passes, then review it against the voice rules.
 7. Publish with leafpad_create_post (published: false for a draft).
 Report the draft URL and what brand rules you applied.
 ```

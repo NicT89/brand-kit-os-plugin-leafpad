@@ -23,8 +23,8 @@ Takes a drafted article and produces full publish-ready metadata for the **rich-
 ## Workflow
 
 1. **Load brand context in parallel**:
-   - `get_brand_kit_expression` — extract `preferred_terminology`, `negative_directory`, `visual_style`, `content_categories`
-   - `get_brand_kit_governance` — extract `disclosure_policy` and any required footer copy
+   - `get_brand_context_for_agent` with `task_type: "content_generation"` and `platform: "blog"`: extract `preferred_terminology`, `visual_style`, the governance `negative_directory`, `disclosure_policy` and any required footer copy
+   - `get_brand_kit` with `sections: ["seo"]`: the kit's target keywords and tags
 
 2. **Load Leafpad context in parallel**:
    - `leafpad_list_posts` — internal-link candidates
@@ -38,7 +38,7 @@ Takes a drafted article and produces full publish-ready metadata for the **rich-
 4. **Build `excerpt`** — 1–2 sentences (160–240 chars) distinct from `seo.description`. The SEO description is for search; the excerpt is for blog index pages and social feeds. Derive from the article's intro paragraph in the brand's voice.
 
 5. **Build feature image brief** — The prompt the pipeline passes to the image generator. It tries `leafpad_generate_image` first (which applies the org's brand palette automatically); if that's unavailable it falls back to Gamma/Higgsfield, so keep the prompt generator-agnostic and include palette/style cues:
-   - `feature_image.prompt` — one paragraph describing subject, style, mood. Pull style cues from `get_brand_kit_expression.visual_style`; you do not need to specify exact colors, since Leafpad applies the brand palette.
+   - `feature_image.prompt`: one paragraph describing subject, style, mood. Pull style cues from the expression `visual_style`; you do not need to specify exact colors, since Leafpad applies the brand palette.
    - `feature_image.alt` — ≤ 125 chars, descriptive, includes primary keyword where natural
    - `feature_image.caption` — optional one-line caption in brand voice
 
@@ -50,20 +50,23 @@ Takes a drafted article and produces full publish-ready metadata for the **rich-
 
 8. **Suggest tags** — Match against `leafpad_list_tags`. If `leafpad_list_tags` returns `[]`, propose new tags from the draft and mark each `new: true`.
 
-9. **Suggest categories** — Pull from `get_brand_kit_expression.content_categories`. Pick the 1–2 categories that best fit the article. If the brand kit has no content_categories defined, omit this field (the publisher will strip it).
+9. **Suggest categories**: Pull from the expression `content_categories`. Pick the 1–2 categories that best fit the article. If the brand kit has no content_categories defined, omit this field (the publisher will strip it).
 
 10. **Compute `reading_time`** — `ceil(body_word_count / 220)` minutes.
 
 11. **Compute `canonical_url`** — Omit by default. Only emit if the article explicitly references republishing existing content.
 
-12. **Return a structured patch** — Do not rewrite the article body.
+12. **Check the generated text**: run `check_draft` (`platform: "blog"`) on `seo.title`, `seo.description` and `excerpt`. Fix every hard violation and re-check until `passed` is true.
+
+13. **Return a structured patch**: Do not rewrite the article body.
 
 ## MCP tools used
 
 | Tool | Server | Purpose |
 |------|--------|---------|
-| `get_brand_kit_expression` | brand-kit-os | Preferred terminology, negative directory, visual style, content categories |
-| `get_brand_kit_governance` | brand-kit-os | Disclosure policy for footer copy |
+| `get_brand_context_for_agent` | brand-kit-os | Preferred terminology, negative directory, visual style, content categories, disclosure policy |
+| `get_brand_kit` (`sections: ["seo"]`) | brand-kit-os | Target keywords and tags |
+| `check_draft` | brand-kit-os | Check `seo.title`, `seo.description` and `excerpt` text before returning the patch |
 | `leafpad_list_posts` | leafpad | Internal-link candidates |
 | `leafpad_list_tags` | leafpad | Tag reuse |
 

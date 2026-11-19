@@ -15,7 +15,8 @@ Validates content against brand standards before delivery. Performs structured c
 
 ## Workflow
 
-1. **Load validation baseline** — Call `get_brand_kit_expression` and `get_brand_kit_governance` if not already in context
+1. **Load validation baseline**: Call `get_brand_context_for_agent` with `task_type: "content_generation"` and the target `platform` if the bundle is not already in context
+1b. **Run `check_draft`** on the content as plain text with the same `platform`. Every hard violation is a Critical finding; soft violations are Suggested. Report its `passed` value and the violation counts
 2. **Run enforcement checklist** — Evaluate content against every item in `skills/brand-voice-enforcement/references/enforcement-checklist.md`
 3. **Check terminology** — Scan for prohibited terms from the negative directory and verify preferred terminology usage
 4. **Verify governance** — Confirm no blacklisted claims, compliance notes observed, disclosure policy followed
@@ -32,8 +33,8 @@ Validates content against brand standards before delivery. Performs structured c
 
 | Tool | Purpose |
 |------|---------|
-| `get_brand_kit_expression` | Voice rules, terminology lists, tone dimensions |
-| `get_brand_kit_governance` | Constraints, negative directory, compliance, disclosure |
+| `get_brand_context_for_agent` | Voice rules, terminology lists, tone dimensions, governance, negative directory, disclosure |
+| `check_draft` | Deterministic check against anti-slop rules, negative directory and writing constraints |
 
 ## Output format
 
@@ -46,6 +47,7 @@ Checks:
 - Terminology: [Pass/Fail] — [issues found]
 - Governance: [Pass/Fail] — [violations]
 - Completeness: [Pass/Fail] — [details]
+- check_draft: passed true/false, N hard, N soft violations
 - Blog SEO & structure (blog only):
     word_count: N (min 800, target 900+) — [Pass/Fail]
     title_word_count: N (must be 8–12) — [Pass/Fail]
@@ -72,5 +74,6 @@ Overall: [summary]
 2. Recommendations must be actionable — include specific fixes, not vague guidance
 3. A single Critical finding means the overall result is "Needs Revision" at minimum
 4. Multiple Critical findings or a governance violation means "Fail"
+4b. A `check_draft` result with `passed: false` is never "Pass"
 5. Do not block delivery for Optional findings
 6. **The blog SEO & structure audit is a hard gate for length & title.** Body < 800 words or a title outside 8–12 words is each a Critical finding that blocks publish. A **missing image is a Warning, not a block** (emit a manual-image task) — image generation can fail server-side. Always report the measured numbers so the caller can revise precisely.

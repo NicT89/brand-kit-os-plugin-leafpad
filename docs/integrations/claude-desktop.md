@@ -43,7 +43,7 @@ Provide the API key and `publish_mode` when prompted.
 
 ## Recurring content
 
-Cowork's scheduled sessions are the recommended way to run the weekly/monthly routines. See [`../routines/weekly-3-articles.md`](../routines/weekly-3-articles.md).
+Cowork's scheduled sessions are the recommended way to run the weekly/monthly routines. See [`../routines/weekly-leafpad-scheduler.md`](../routines/weekly-leafpad-scheduler.md).
 
 ## Notes
 

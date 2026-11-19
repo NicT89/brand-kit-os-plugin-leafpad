@@ -40,9 +40,9 @@ Examples:
 
 ## Workflow
 
-1. **Resolve brand kit** — `get_brand_kit_summary`; if multiple, ask which.
+1. **Resolve brand kit**: `get_agent_briefing` lists kits; if multiple, ask which.
 2. **Resolve Leafpad org** — `leafpad_list_organizations`; if multiple, ask which org's KB to sync into.
-3. **Pull brand sections** — Call the relevant BKOS getters for the requested `--sections`.
+3. **Pull brand sections**: Call `get_brand_kit` with the requested sections (`voice` maps to `expression`; the others map by name: `governance`, `audience`, `products`, `core`). `get_brand_context_for_agent` with `task_type: "content_generation"` and `platform: "blog"` is a good single source for the voice and governance documents.
 4. **Format KB documents** — Turn each section into a clean, titled Markdown document optimized for retrieval:
    - `Brand Voice & Tone` (from expression)
    - `Brand Governance & Compliance` (from governance — constraints, negative directory, disclosure)

@@ -2,6 +2,22 @@
 
 Gaps discovered while building this plugin. Each unlocks specific functionality in the BKOS+Leafpad workflow. Captured here so we can surface them with Leafpad's team.
 
+## Shipped (checked against the live MCP on 2026-11-19)
+
+- **Scheduled queue listing and editing.** `leafpad_list_scheduled_posts` lists pending (and,
+  with `include_completed`, completed) rows with id, type, status, date, title, prompt and
+  keyword data; `leafpad_update_scheduled_post` changes a pending row;
+  `leafpad_delete_scheduled_posts` removes pending rows at no charge. The plugin previously
+  said no queue-listing tool existed; it now dedupes against the queue and updates rows in place.
+- **Keyword data and structure on scheduled posts.** `leafpad_add_scheduled_posts` takes
+  `volume`, `kd`, `intent`, `post_type`, `parent_id` and `parent_scheduled_post_id`.
+- **Publishing a draft.** `publish_post` publishes one draft.
+- **Rewrites.** `leafpad_schedule_rewrites` schedules an AI rewrite of an existing post.
+- **Search performance (partial, closes part of #6).** `leafpad_get_search_console_data`,
+  `check_draft_seo` and `find_pages_needing_attention` expose Search Console data, on-page SEO
+  scores and decaying pages.
+- **Drafts by default.** `leafpad_create_post` now defaults `published` to `false`.
+
 ## Bugs (blocking)
 
 ### 0. `leafpad_generate_image` returns `Unauthorized` (server-side)
@@ -19,6 +35,8 @@ Gaps discovered while building this plugin. Each unlocks specific functionality 
 **Why:** `leafpad_create_post` / `leafpad_update_post` have **no featured-image field** — images can only be embedded inline in `html_content`. And with `generate_image` down, there's **no way to host an externally-generated image on Leafpad's CDN** via MCP.
 
 **Shape:** add a `featured_image` field on create/update, and a `leafpad_upload_image({ org_id, file_url | bytes }) -> cdn_url` tool.
+
+**Update 2026-11-19:** `leafpad_generate_image`'s description now says its URL "can be passed as a post's featured image to `leafpad_create_post` or `leafpad_update_post`", but neither tool's schema has such a field yet. Either the field is coming or the description is ahead of the schema; please confirm.
 
 ## High-priority — would unlock specific workflows
 
@@ -39,6 +57,57 @@ Gaps discovered while building this plugin. Each unlocks specific functionality 
 **Why:** BKOS owns voice/tone data. Today there's no programmatic way to push that into Leafpad's Writing Style settings, so AI-generated posts on Leafpad's side use whatever the dashboard has — potentially out of sync with BKOS. Read/write would let the plugin auto-sync.
 
 **Shape:** `leafpad_writing_style_get({ org_id })`, `leafpad_writing_style_set({ org_id, tone, point_of_view, reading_level, post_length, structure })`
+
+### 3b. Publish mode (draft option) on `leafpad_add_scheduled_posts`
+
+**Why:** the `brand-kit-os` account auto-publishes scheduled posts at generation (observed
+2026-11-18: row 1702 became live post 2198 three minutes after its 15:00 UTC slot). There is
+no way to ask for a draft instead, so the brief is the last point of control and any QA fix
+lands on a live page.
+
+**Shape:** a per-row `publish_mode: "draft" | "publish"` (or `published: false`) on
+`leafpad_add_scheduled_posts` and `leafpad_update_scheduled_post`, defaulting to the
+organization's current behaviour; and the organization's setting readable via MCP.
+
+### 3c. MCP access to Business Overview, Writing Style, Keywords and Blog Options
+
+**Why:** these settings are Leafpad's own layer of brand context for every generated post,
+alongside the Knowledge Base. They are dashboard-only today, so the plugin cannot read them to
+avoid contradicting them in a brief, or keep them in sync with the Brand Kit OS kit.
+Extends #3 (Writing Style) to the other three settings pages.
+
+**Shape:** `leafpad_get_site_settings({ organization_slug })` returning business overview,
+writing style, target keywords and blog options; and a matching `leafpad_update_site_settings`
+for whichever fields are safe to write.
+
+### 3d. Per-post tags and SEO fields on scheduled posts
+
+**Why:** Leafpad chooses tags and SEO title/description for generated posts, and tags cannot be
+changed through MCP afterwards (`leafpad_update_post` has no `tags`). We already know the
+target keyword, the tags we want reused and the meta description we would write.
+
+**Shape:** optional `tags` (comma string, reused by name), `seo_title`, `seo_description` and
+`seo_keywords` on `leafpad_add_scheduled_posts` / `leafpad_update_scheduled_post` items, used
+as-is or as strong hints; plus `tags` on `leafpad_update_post`.
+
+### 3e. Internal links that honor basePath and only link live slugs
+
+**Why:** generated posts sometimes link `/blog/<slug>` (singular) when the site serves posts at
+`/blogs/<slug>`, or link slugs that do not exist. The Brand Kit OS site now normalizes these at
+render time, but the stored HTML is still wrong and other sites will 404.
+
+**Shape:** build internal links from the organization's configured blog base path and domain
+(absolute, e.g. `https://www.brandkitos.com/blogs/<slug>`), and only to published,
+non-redirected posts. Optionally accept a list of required internal links per scheduled row.
+
+### 3f. Search Console domain property
+
+**Why:** the `brand-kit-os` connection uses the URL-prefix property `https://brandkitos.com/`,
+which is near-empty because the site serves from `www`. The data lives in the domain property
+`sc-domain:brandkitos.com`.
+
+**Shape:** allow choosing a domain property when connecting Search Console, or report which
+property is connected in `leafpad_get_search_console_data` output.
 
 ## Medium-priority — closes content management gaps
 

@@ -116,7 +116,7 @@ The research agent proposes 3 brand-relevant topics (from your sources, company 
 
 ## 8. Make it recurring
 
-To have Claude build and schedule a content calendar automatically (e.g., every Monday at 8am), see [`docs/routines/weekly-3-articles.md`](routines/weekly-3-articles.md).
+To have Claude schedule two posts a week on Leafpad and check each one after it generates, see [`docs/routines/weekly-leafpad-scheduler.md`](routines/weekly-leafpad-scheduler.md).
 
 ## 9. Supercharge Leafpad's own AI (optional)
 

@@ -18,14 +18,14 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 - `article` — rich-article object per `../references/brand-to-leafpad-mapping.md` (used for `draft`/`published`)
 - `mode` — `draft` | `published` | `scheduled`. Default is `${user_config.publish_mode}`, falling back to `draft`.
 - `image_url` — optional. A public image URL to embed in the body as an `<img>`. Produced by the pipeline's image step: try `leafpad_generate_image` first (on-brand, Leafpad CDN); if it fails — it has returned `Unauthorized` server-side, see `../references/brand-to-leafpad-mapping.md` — fall back to Gamma or Higgsfield and use that URL.
-- For `scheduled` mode only: `schedule = { title, date (ISO-8601 UTC), prompt }` — a topic, a future date, and a brand-voice generation prompt. **Not** a finished article.
+- For `scheduled` mode only: `schedule = { title, date (ISO-8601 UTC), prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }`: a target keyword, a future date, a full brief per `../references/scheduled-brief-template.md`, and keyword data. **Not** a finished article.
 - `organization_slug` — optional. Resolved via `leafpad_list_organizations` if needed.
 
 ## Workflow
 
-1. **Validate inputs** — For `draft`/`published`, ensure `article.title` and `article.body` are present. For `scheduled`, ensure `schedule.title` and `schedule.date` are present. If a required field is missing, return an error without calling Leafpad.
+1. **Validate inputs**: For `draft`/`published`, ensure `article.title` and `article.body` are present. For `scheduled`, ensure `schedule.title`, `schedule.date` and a non-empty `schedule.prompt` are present. If a required field is missing, return an error without calling Leafpad.
 
-2. **Resolve organization** — If `organization_id` not provided, call `leafpad_list_organizations`. If there's exactly one, use it. If multiple, ask the user once.
+2. **Resolve organization**: If `organization_slug` is not provided, call `leafpad_list_organizations`. If there's exactly one, use it. If multiple, ask the user once.
 
 3. **Project to the verified Leafpad payload** — `leafpad_create_post` accepts a closed, lean field set (calibrated 2026-06-13; full detail in `../references/brand-to-leafpad-mapping.md`). Build exactly this payload — do not add fields the schema does not expose:
    - `organization_slug` ← resolved org
@@ -33,7 +33,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
    - `slug` ← `article.slug` (else kebab-case from title)
    - `html_content` ← `toHTML(article.body)` with internal links inserted and, if `image_url` is present, an `<img src="image_url" alt="…">` near the top (**HTML, not markdown** — there is no `content`/`content_format` field; there is no separate featured-image field, so the image lives in the body). Escape literal `&` as `&amp;` in the body
    - `post_type` ← `"ARTICLE"`
-   - `published` ← `mode === "published"` (**defaults to `true` if omitted — always send `false` for draft/scheduled staging**)
+   - `published` ← `mode === "published"` (**defaults to `false` when omitted** as of the 2026-11-19 schema; still send it explicitly)
    - `seo_title` ← `article.seo.title` (flat field, not nested)
    - `seo_description` ← `article.seo.description` (**raw text — never HTML-escape; a literal `&amp;` here leaks into the meta tag**)
    - `seo_keywords` ← `article.seo.keywords.join(", ")` (**comma string**, not array)
@@ -44,7 +44,7 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 4. **Dispatch by mode**:
    - `draft` → `leafpad_create_post` with `published: false`
    - `published` → `leafpad_create_post` with `published: true`
-   - `scheduled` → `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title: schedule.title, date: schedule.date, prompt: schedule.prompt }]`. **`date` is ISO-8601 in UTC with `Z`** (verified accepted, e.g. `2026-06-23T14:00:00Z`). Leafpad **generates** the post on that date from the title + prompt — no `html_content`/`seo`/`tags` are sent in this mode. Encode the brand voice rules and the word-count/title rules into `schedule.prompt`.
+   - `scheduled`: first `leafpad_list_scheduled_posts` for the slot; if a pending "new post" row exists, `leafpad_update_scheduled_post` it. If the slot holds a pending row of another type (rewrite, publish existing post), do not touch it: report the conflict and stop. Otherwise `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }]` from `schedule`. **`date` is ISO-8601 in UTC with `Z`** (e.g. `2026-11-24T15:00:00Z`). Leafpad **generates** the post on that date from the title and prompt, charges $1, and on the `brand-kit-os` account **publishes it immediately**. No `html_content`/`seo`/`tags` are sent in this mode. Encode the brand voice rules and the word-count/title rules into `schedule.prompt`.
 
 5. **Strip-on-reject retry** — If the Leafpad MCP error message matches any of:
    - `unknown field`
@@ -72,7 +72,9 @@ Takes a finalized rich-article object (the shape defined in `../references/brand
 | Tool | Server | Purpose |
 |------|--------|---------|
 | `leafpad_create_post` | leafpad | Create draft or live post (`draft`/`published` modes) |
-| `leafpad_add_scheduled_posts` | leafpad | Queue a topic for Leafpad to generate on a future date (`scheduled` mode) |
+| `leafpad_add_scheduled_posts` | leafpad | Queue a topic for Leafpad to generate on a future date (`scheduled` mode; $1 per post when it runs) |
+| `leafpad_list_scheduled_posts` / `leafpad_update_scheduled_post` | leafpad | Check the queue and change a pending row instead of adding a duplicate |
+| `publish_post` | leafpad | Publish an existing draft the user has agreed to publish |
 | `leafpad_generate_image` | leafpad | (Upstream) generate the on-brand feature image; its URL is passed in as `image_url`. **May return `Unauthorized` server-side — pipeline falls back to Gamma/Higgsfield.** |
 | `leafpad_list_organizations` | leafpad | Resolve organization when ambiguous |
 
@@ -97,7 +99,7 @@ Publish Result:
 ## Rules
 
 1. Never mutate `article.body` — this agent only publishes; content edits belong upstream
-2. Never call `leafpad_update_post` to fix tags — `leafpad_update_post` has no `tags` parameter; tags are immutable after creation. If tags are wrong, recreate the post.
+2. Never call `leafpad_update_post` to fix tags: it has no `tags` parameter; tags are immutable after creation through MCP. If tags are wrong, fix them in the Leafpad UI or recreate the post.
 3. **When editing SEO via `leafpad_update_post`, send the full trio** (`seo_title` + `seo_description` + `seo_keywords`) together. Sending `seo_description` alone returns `422 … Required at "seo.title"; Required at "seo.keywords"`.
 4. **Strip-on-reject is a fallback, not the plan** — the verified mapping should land cleanly. Keep it bounded at max 3 retries; never silently drop required fields (`name`, `html_content`)
 5. On non-schema Leafpad MCP failure (auth, network, 5xx), return the article + error and stop — do not retry blindly

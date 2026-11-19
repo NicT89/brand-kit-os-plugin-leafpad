@@ -21,10 +21,10 @@ This is the **complete** accepted field set (the tool schema is closed; nothing 
 | `slug` | string | kebab-case from `name` | Optional; auto-derived if omitted |
 | `html_content` | string (**HTML**, not markdown) | drafted body, rendered to HTML | There is **no** markdown `content` field and **no** `content_format`. Convert the draft to HTML before sending. Escape literal `&` as `&amp;` inside the body |
 | `post_type` | enum `ARTICLE` \| `FOLDER` | always `ARTICLE` for posts | Default `ARTICLE` |
-| `published` | boolean | resolved from `${user_config.publish_mode}` + override flags | **Defaults to `true`.** For a draft you MUST send `published: false`, or the post goes live |
+| `published` | boolean | resolved from `${user_config.publish_mode}` + override flags | **Defaults to `false`** (re-verified 2026-11-19: the tool now creates an unpublished draft unless `published: true`). Still send `published: false` explicitly for drafts. `publish_post` publishes a draft later |
 | `seo_title` | string ≤60 | `seo-optimizer` | Flat field — **not** nested under a `seo` object |
 | `seo_description` | string 140–160 | `seo-optimizer` | **Plain text.** Do NOT HTML-escape it — a literal `&amp;` here renders as `&amp;` in the meta tag. Use a raw `&` |
-| `seo_keywords` | **comma-separated string** | `seo-optimizer` + `get_brand_kit_expression.preferred_terminology` | e.g. `"brand drift, brand consistency, AI governance"`. Not a JSON array |
+| `seo_keywords` | **comma-separated string** | `seo-optimizer` + expression `preferred_terminology` (from `get_brand_context_for_agent`) | e.g. `"brand drift, brand consistency, AI governance"`. Not a JSON array |
 | `tags` | **comma-separated string** of tag names | `seo-optimizer` from `leafpad_list_tags` + draft body | e.g. `"Brand Consistency, AI Governance"`. New names are created automatically; existing names are reused. Pass names, not IDs |
 
 ### Verified behaviors (from the live round-trip)
@@ -47,25 +47,47 @@ The tool schema does not include these. They are not "candidates"; sending them 
 - **SEO fields are co-required.** Sending `seo_description` alone returns `422 … Required at "seo.title"; Required at "seo.keywords"`. Always resend the full trio (`seo_title` + `seo_description` + `seo_keywords`) together on any SEO edit.
 - **Tags are immutable after creation.** `leafpad_update_post` has no `tags` parameter. To change tags you must recreate the post (matches the documented limitation — now schema-confirmed).
 - Updatable fields: `name`, `slug`, `html_content`, `published`, `seo_title`, `seo_description`, `seo_keywords`.
+- **`html_content` replaces the whole body.** Read the post first with `leafpad_get_post` and `content_format: "html"` (custom HTML blocks survive only in that format), edit, and send the full body back.
+- **Publishing a draft:** `publish_post({ organization_slug, post_id })` makes one draft live and notifies a configured webhook. Use it only when the user (or a Routine the user set up) has agreed to publish.
 
-## Scheduling — `leafpad_add_scheduled_posts` (calibrated 2026-06-15)
+## Scheduling: `leafpad_add_scheduled_posts` (re-verified 2026-11-19)
 
-**Scheduling is a different model from drafting.** You do **not** send a finished article with a publish timestamp. You queue a topic and Leafpad **generates** the post on the date.
+**Scheduling is a different model from drafting.** You do **not** send a finished article with a publish timestamp. You queue a target keyword and a brief, and Leafpad **generates** the post on the date.
 
 ```
 leafpad_add_scheduled_posts({
-  organization_slug,
-  posts: [
-    { title,            // the topic / keyword Leafpad writes about (required)
-      date,             // ISO-8601 in UTC with Z, e.g. "2026-06-23T14:00:00Z" (required, verified)
-      prompt }          // optional brand-voice brief; encode voice + word-count/title rules here
-  ]
+  organization_slug,               // e.g. "brand-kit-os" (not an id)
+  posts: [{
+    title,                         // target keyword phrase; Leafpad writes the final title (required)
+    date,                          // ISO 8601 UTC with Z, e.g. "2026-11-24T15:00:00Z" (required)
+    prompt,                        // the full brief; see scheduled-brief-template.md
+    volume,                        // monthly search volume (integer >= 0), if known
+    kd,                            // keyword difficulty 0 to 100, if known
+    intent,                        // informational | commercial | transactional | navigational
+    post_type,                     // "ARTICLE" (default) or "FOLDER" for a pillar hub
+    parent_id,                     // existing folder post to nest under
+    parent_scheduled_post_id       // scheduled folder row whose generated post becomes the parent
+  }]
 })
 ```
 
-- **Verified:** `date: "2026-06-23T14:00:00Z"` was accepted and stored as `2026-06-23T14:00:00.000Z`.
-- The generated post lands as a **draft** for manual review/publish (matches `publish_mode=draft`).
-- No "list scheduled queue" tool exists; a scheduled item is not visible via `leafpad_get_post` until it generates.
+There is no `scheduled_at`, `secondary_prompt` or `organization_id` parameter. Older versions of this plugin sent those names; they were wrong.
+
+- **Cost:** each scheduled post charges **$1** to the organization's balance when it runs. `leafpad_create_post` posts are never charged.
+- **Auto-publish:** the `brand-kit-os` account publishes at generation. Observed 2026-11-18: scheduled row 1702 produced post 2198, live at 15:03 UTC, 3 minutes after its 15:00 UTC slot. The row's type changes from "new post" to "publish existing post" and it carries the new post id. There is no draft option on this tool today (requested in `LEAFPAD_REQUESTS.md`).
+- **What Leafpad decides:** the final title, slug, tags, SEO fields, featured image, 2 to 4 body images and internal links. Its internal links can point at `/blog/...` (singular) or at slugs that do not exist; QA must flag those.
+- **Live URL:** `https://www.brandkitos.com/blogs/<slug>` (plural `/blogs/`).
+
+### The queue: list, change, remove
+
+| Tool | Use |
+|---|---|
+| `leafpad_list_scheduled_posts({ organization_slug, include_completed, from_date, to_date, limit })` | Rows soonest first, with scheduled post id, type (new post, rewrite, publish existing post), status, date, title, prompt and keyword data. `include_completed: true` adds rows that already ran (and their post id). |
+| `leafpad_update_scheduled_post({ organization_slug, scheduled_post_id, ... })` | Change a pending row. New post rows take `date`, `title`, `prompt`, `volume`, `kd`, `intent`, `post_type`, `parent_id`, `parent_scheduled_post_id`; rewrite rows take `instructions`, `target_keywords`, `url`, `volume`, `kd`, `intent`. A row that ran cannot change. |
+| `leafpad_delete_scheduled_posts({ organization_slug, scheduled_post_ids })` | Remove pending rows (1 to 50). Never charged; rows that already ran are kept as history. |
+| `leafpad_schedule_rewrites({ organization_slug, rewrites: [{ post_id, date, instructions, target_keywords, url, volume, kd, intent }] })` | AI rewrite of an existing post, published in place. Uses the daily update allowance and, on a paid plan, a refresh credit. |
+
+Before adding a row, always check the queue: if a pending new-post row already holds the target slot, update it with the new-post fields instead of adding a second one. Never send new-post fields to a rewrite row; report that conflict instead.
 
 ## Images — `leafpad_generate_image`
 
@@ -76,7 +98,8 @@ leafpad_generate_image({ organization_slug, prompt }) -> public CDN URL
 ```
 
 - Leafpad applies the **org's brand style + color palette** automatically, so the prompt only needs subject/style/mood.
-- There is no featured-image field on `leafpad_create_post`; embed the returned URL as an `<img>` in `html_content` (it becomes an image block in Leafpad's editor).
+- There is no featured-image field on `leafpad_create_post`; embed the returned URL as an `<img>` in `html_content` (it becomes an image block in Leafpad's editor). Note (2026-11-19): the tool's description now says its URL "can be passed as a post's featured image" to `leafpad_create_post` / `leafpad_update_post`, but neither tool's schema exposes such a field. Until one appears, body-inline is the only path. Scheduled (AI-generated) posts get a featured image from Leafpad automatically.
+- Optional args (2026-11-19 schema): `aspect` (`landscape` default, `square`, `portrait`), `quality`, `brand_style` (default true), `file_name` (SEO file name).
 - ⚠️ **Known issue (2026-06-24): `leafpad_generate_image` returns `Unauthorized` server-side** even though every other Leafpad tool (read + write) authenticates with the same token. The OAuth resource advertises no scopes (`scopes_supported: []`), and create/update/schedule all succeed — so it's a Leafpad-side entitlement or token-propagation bug, not a client auth problem. Filed in `LEAFPAD_REQUESTS.md`.
 - **Fallback while it's down:** generate with **Gamma** (`generate` → read the AI image's `src` on `cdn.gamma.app` from the result JSON) or **Higgsfield**, then embed that URL. Caveat: those hot-link a non-Leafpad CDN; prefer Leafpad's CDN once the tool is fixed.
 - **Add/replace an image on an existing post:** call `leafpad_update_post` with the full `html_content` re-sent plus the `<img>` (update replaces the whole body). Verified working 2026-06-24.
@@ -85,17 +108,19 @@ leafpad_generate_image({ organization_slug, prompt }) -> public CDN URL
 
 `/publish-pipeline` calls these in parallel to build the article. They feed the **body and SEO**, which then project onto the verified fields above.
 
-| Brand Kit OS tool | Feeds | Used for |
+Brand Kit OS MCP 3.0 tools (the per-section getters such as `get_brand_kit_expression` were removed in 3.0):
+
+| Brand Kit OS call | Feeds | Used for |
 |---|---|---|
-| `get_brand_kit_summary` | (planning only) | Topic-fit scoring against brand mission |
-| `get_brand_kit_core` | `html_content` (intro + closing CTA) | Mission/promise framing, taglines |
-| `get_brand_kit_personality` | `html_content` (tone calibration) | Traits, values, principles, moods |
-| `get_brand_kit_expression` | `html_content` (voice), `seo_keywords`, `tags` | Voice, preferred terminology, content categories, visual style (→ image brief) |
-| `get_brand_kit_governance` | `html_content` (compliance copy + disclosure footer), formatting rules | Writing constraints (no em dashes, max 1 exclamation, `&` for `and`), negative directory, disclosure policy |
-| `get_brand_kit_audience` | `html_content` (persona-aware framing) | Persona targeting |
-| `get_brand_kit_products` | `html_content` (CTAs, product callouts) | Product CTAs and differentiators |
-| `get_brand_kit_personas` | (byline context only) | `author` is auto-set by Leafpad, so persona name informs voice, not the byline field |
-| `list_knowledge_files` + `get_knowledge_file` | `html_content` (style adherence) | Apply long-form style guides and playbooks |
+| `get_brand_kit` (no `sections`: the summary) | (planning only) | Topic-fit scoring against brand mission |
+| `get_brand_context_for_agent` (`task_type: "content_generation"`, `platform: "blog"`) | `html_content` (voice, compliance copy, disclosure footer), `seo_keywords`, `tags`, scheduled `prompt` | Voice, preferred terminology, content categories, visual style (image brief), writing constraints, negative directory, disclosure policy, audience, examples, knowledge index |
+| `get_brand_kit` `sections: ["core"]` | `html_content` (intro + closing CTA) | Mission/promise framing, taglines |
+| `get_brand_kit` `sections: ["personality"]` | `html_content` (tone calibration) | Traits, values, principles, moods |
+| `get_brand_kit` `sections: ["products"]` | `html_content` (CTAs, product callouts) | Product CTAs and differentiators |
+| `get_brand_kit` `sections: ["seo"]` | `seo_keywords`, scheduled `title` | Target keywords |
+| `get_brand_kit` `sections: ["ai_personas"]` | (byline context only) | `author` is auto-set by Leafpad, so persona name informs voice, not the byline field |
+| `get_knowledge_file` | `html_content` (style adherence) | Long-form style guides and playbooks from the knowledge index |
+| `check_draft` | gate before any publish | Every body is checked; hard violations block publish |
 
 ## Rich article intermediate object → Leafpad projection
 
@@ -121,7 +146,7 @@ leafpad_create_post payload = {
   slug:            rich_article.slug,
   html_content:    toHTML(rich_article.body_markdown),   // with internal links inserted
   post_type:       "ARTICLE",
-  published:       mode === "published",                  // false for draft/scheduled-staging
+  published:       mode === "published",                  // false for draft (also the default)
   seo_title:       rich_article.seo.title,
   seo_description: rich_article.seo.description,           // raw text, no &amp;
   seo_keywords:    rich_article.seo.keywords.join(", "),

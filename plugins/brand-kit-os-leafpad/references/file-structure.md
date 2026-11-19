@@ -12,6 +12,7 @@ This directory is created automatically by the `/setup` command on first run.
     <brand-kit-slug>/            # One folder per brand (slug = lowercase hyphenated name)
       sources.json               # RSS feeds, citation domains, keyword clusters, cadence
       history.json               # Dedup log: published and drafted topic URLs/titles
+      pipeline.json              # Optional: overrides this brand's entry in references/pipeline-brands.json
   cache/
     rss/                         # Cached RSS feed responses (reduces repeat fetches)
     web/                         # Cached web scrape responses
@@ -42,6 +43,9 @@ Supported source types for `trusted_sources`:
 - `atom` — Some GitHub changelogs, developer blogs. Also fetched with `feedparser`.
 - `html` — Sites without feeds. Scraped via WebFetch or Firecrawl.
 - Reddit RSS: `https://www.reddit.com/r/<subreddit>.rss`
+
+### `brands/<slug>/pipeline.json` (optional)
+Overrides the brand's entry in the bundled `references/pipeline-brands.json`, which configures `/weekly-schedule`, `/post-qa` and `/blog-analytics` (kit id, Leafpad org, site URL, blog path, CTA, cadence, monthly allocation, digest Slack channel, report channel, Search Console and GA4 ids). Same shape as one entry under `brands` in that file.
 
 ### `brands/<slug>/history.json`
 Dedup log used by `topic-scout` to avoid re-proposing recently published or drafted topics.

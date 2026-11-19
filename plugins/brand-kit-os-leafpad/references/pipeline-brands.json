@@ -1,0 +1,56 @@
+{
+  "$comment": "Per-brand config for /weekly-schedule, /post-qa and /blog-analytics. Add a brand by adding an entry and setting enabled to true. A user copy at ~/.brand-kit-os-leafpad/brands/<key>/pipeline.json overrides the entry with the same key.",
+  "brands": {
+    "brand-kit-os": {
+      "enabled": true,
+      "brand_kit_id": "9d16945f-2bb4-4186-8dde-64afc707db39",
+      "leafpad_org": "brand-kit-os",
+      "site_base_url": "https://www.brandkitos.com",
+      "blog_path": "/blogs/",
+      "cta_url": "https://www.brandkitos.com/signup",
+      "platform": "blog",
+      "cadence": {
+        "days": ["Tuesday", "Thursday"],
+        "local_time": "09:00",
+        "timezone": "America/Chicago",
+        "posts_per_week": 2
+      },
+      "monthly_post_allocation": 30,
+      "digest": {
+        "slack_channel_id": "C0AMKSDCQ5A",
+        "slack_channel_name": "weekly-digest",
+        "title_contains": "Brand AI Weekly Digest"
+      },
+      "qa_report_slack_channel_id": null,
+      "search_console": {
+        "leafpad_property": "https://brandkitos.com/",
+        "supermetrics_ds": "GW",
+        "supermetrics_account": "sc-domain:brandkitos.com"
+      },
+      "ga4": {
+        "supermetrics_ds": "GAWA",
+        "property_id": "503617238"
+      }
+    },
+    "autologs": {
+      "enabled": false,
+      "brand_kit_id": "0315bbb8-e5f3-49de-adf2-9f0bc39d586e",
+      "leafpad_org": "autologs",
+      "site_base_url": null,
+      "blog_path": null,
+      "cta_url": null,
+      "platform": "blog",
+      "cadence": {
+        "days": ["Tuesday", "Thursday"],
+        "local_time": "09:00",
+        "timezone": "America/Chicago",
+        "posts_per_week": 2
+      },
+      "monthly_post_allocation": null,
+      "digest": null,
+      "qa_report_slack_channel_id": null,
+      "search_console": null,
+      "ga4": null
+    }
+  }
+}

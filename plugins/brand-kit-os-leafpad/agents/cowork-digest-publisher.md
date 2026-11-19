@@ -21,7 +21,7 @@ The agent writes the full article, validates, and calls `leafpad_create_post` wi
 
 ### Scheduled mode
 
-When the user asks to schedule rather than draft now, the agent selects a topic, writes a detailed prompt, and calls `leafpad_add_scheduled_posts` with the title, target date, and prompt. Leafpad generates the content later.
+When the user asks to schedule rather than draft now, the agent selects a topic, writes a full brief per `../references/scheduled-brief-template.md`, and calls `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title (target keyword), date, prompt, volume, kd, intent, post_type }]`. Leafpad generates the content later, charges $1 when it runs, and on the `brand-kit-os` account publishes it immediately. Check `leafpad_list_scheduled_posts` first and update a pending "new post" row for the same slot with `leafpad_update_scheduled_post` instead of adding a duplicate. If a pending row of another type holds the slot, report the conflict instead of changing it.
 
 ## Voice calibration
 
@@ -48,15 +48,13 @@ These files are optional — the agent works without them using only MCP data, b
 
 ### 1. Analyze digest
 
-Parse topics from the digest. Call `get_brand_kit_summary` to establish relevance criteria (mission, audience, category). Pick the single topic with the strongest brand fit. If no topic is a reasonable fit, stop and report that.
+Parse topics from the digest. Call `get_brand_kit` with no `sections` (the summary) to establish relevance criteria (mission, audience, category). Pick the single topic with the strongest brand fit. If no topic is a reasonable fit, stop and report that.
 
 ### 2. Load brand context
 
 In parallel where possible:
-- `get_brand_kit_expression` — voice, tone dimensions, verbal style, preferred terminology
-- `get_brand_kit_governance` — constraints, negative directory, compliance, disclosure
-- `get_brand_kit_audience` — persona targeting for the blog reader
-- `get_brand_kit_products` — product context to weave in relevance or CTA
+- `get_brand_context_for_agent` with `task_type: "content_generation"` and `platform: "blog"`: voice, tone dimensions, verbal style, preferred terminology, governance (constraints, negative directory, compliance, disclosure), examples and audience
+- `get_brand_kit` with `sections: ["products"]`: product context to weave in relevance or CTA
 
 ### 3. Gather Leafpad context
 
@@ -79,7 +77,7 @@ Use the blog template: Title → introduction → structured sections → conclu
 ### 5. Generate
 
 Write the article in the brand voice, using preferred terminology, avoiding the negative directory, and hitting the tone dimensions. Include:
-- 2+ internal links to existing Leafpad posts using `<a href="/slug-here">descriptive anchor text</a>`
+- 2+ internal links to existing Leafpad posts in absolute form, `<a href="https://www.brandkitos.com/blogs/<slug>">descriptive anchor text</a>` (plural `/blogs/`; every slug must exist in `leafpad_list_posts`)
 - Exactly 5 tags (reuse existing tags where possible)
 - An SEO meta description of 120–160 characters
 - A word count of 800–1,200 words
@@ -88,7 +86,7 @@ Because digests are news-derived, delegate to the `citation-validator` agent to 
 
 ### 6. Self-validate
 
-Run the enforcement checklist:
+Run `check_draft` on the article text (`platform: "blog"`); fix every hard violation and re-check until `passed` is true. Then run the enforcement checklist:
 - Voice archetype consistent throughout (educational, product-adjacent)
 - Tone dimensions match settings
 - Preferred terminology used
@@ -108,7 +106,8 @@ Before calling `leafpad_create_post`, verify ALL of the following. Fix content a
 | Meta description | 120–160 characters | Count `seo_description` length |
 | Word count | 800–1,200 words | Count words in `html_content` (text only, excluding HTML tags) |
 | Tags | Exactly 5 | Count tags array length |
-| Internal links | 2+ links to existing Leafpad posts | Count `<a href="/">` links in HTML body |
+| Internal links | 2+ links to existing Leafpad posts | Count `https://www.brandkitos.com/blogs/<slug>` links in the HTML body; each slug is in `leafpad_list_posts` |
+| check_draft | `passed: true` | Final `check_draft` result on the article text |
 | Feature image | Cannot upload via MCP | Flag as manual post-publish step |
 
 ### 8. Publish to Leafpad
@@ -117,10 +116,10 @@ Call `leafpad_create_post` via the **leafpad-publisher** agent (verified fields 
 
 **Tier 1 (always send):**
 - `organization_slug` — from `leafpad_list_organizations` (default: `brand-kit-os`)
-- `name`, `slug`, `html_content`, `post_type` (`"blog"`), `published` (`false`)
+- `name`, `slug`, `html_content`, `post_type` (`"ARTICLE"`), `published` (`false`, which is also the default)
 - `seo_title`, `seo_description` (140–160 chars), `seo_keywords`, `tags` (exactly 5)
 
-**Tier 2 (optional — strip if rejected):** `content`, `content_format`, `excerpt`, `feature_image`, `og_image`, `categories`, `reading_time`, `author_name`
+**Do not send:** `content`, `content_format`, `excerpt`, `feature_image`, `og_image`, `categories`, `reading_time`, `author_name`. The tool schema is closed and these are not fields.
 
 **Important:** Tags cannot be updated after creation. The `leafpad_update_post` tool does not accept a `tags` parameter. Tags must be correct on the first `leafpad_create_post` call.
 
@@ -134,11 +133,10 @@ Return the post ID/URL plus a validation report and brand application notes.
 
 | Tool | Purpose |
 |------|---------|
-| `get_brand_kit_summary` | Quick relevance check across digest topics |
-| `get_brand_kit_expression` | Voice, tone, terminology |
-| `get_brand_kit_governance` | Constraints, negative directory, compliance |
-| `get_brand_kit_audience` | Persona targeting |
-| `get_brand_kit_products` | Product relevance and CTA material |
+| `get_brand_kit` (no `sections`) | Quick relevance check across digest topics |
+| `get_brand_context_for_agent` | Voice, tone, terminology, governance, audience |
+| `get_brand_kit` (`sections: ["products"]`) | Product relevance and CTA material |
+| `check_draft` | Mandatory check before the article is published or shown |
 
 ### Leafpad tools
 
@@ -151,7 +149,8 @@ Return the post ID/URL plus a validation report and brand application notes.
 | `leafpad_list_tags` | `organization_slug`, `search` | Get existing tags for reuse |
 | `leafpad_list_organizations` | `response_format` | List available organizations |
 | `leafpad_get_company_data` | `organization_slug`, `question`, `response_format` | Query company knowledge base |
-| `leafpad_add_scheduled_posts` | `organization_slug`, `posts[]` (title, date, prompt) | Schedule posts for future generation |
+| `leafpad_add_scheduled_posts` | `organization_slug`, `posts[]` (title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id) | Schedule posts for future generation ($1 each when they run) |
+| `leafpad_list_scheduled_posts` / `leafpad_update_scheduled_post` | `organization_slug`, `scheduled_post_id`, fields | See and change the queue before a row runs |
 
 ## Output format
 

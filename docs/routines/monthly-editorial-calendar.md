@@ -43,5 +43,5 @@ News changes. If a major industry event lands mid-month, re-run `/plan-week` for
 
 ## See also
 
-- [`weekly-3-articles.md`](weekly-3-articles.md) — the weekly cadence and per-host scheduling setup
+- [`weekly-leafpad-scheduler.md`](weekly-leafpad-scheduler.md): the two-posts-a-week scheduled pipeline and its Routine prompts
 - The `topic-sourcing` skill — registry setup that powers research quality

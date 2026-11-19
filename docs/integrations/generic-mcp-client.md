@@ -19,17 +19,18 @@ Pseudocode for a custom runner (e.g. using the Anthropic SDK with MCP, or any ag
 client = McpClient(servers=[brand_kit_os, leafpad])
 model  = LLM(system_prompt = read("agents/content-generation.md"))
 
-# 1. Load brand context
-brand = client.call_many([
-  "get_brand_kit_expression", "get_brand_kit_governance",
-  "get_brand_kit_audience", "get_brand_kit_products", "get_brand_kit_core",
-])
+# 1. Load brand context (Brand Kit OS MCP 3.0)
+kits  = client.call("get_agent_briefing", {})          # never guess a kit id
+brand = client.call("get_brand_context_for_agent",
+                    { brand_kit_id, task_type: "content_generation", platform: "blog" })
+extra = client.call("get_brand_kit",
+                    { brand_kit_id, sections: ["core", "products"] })
 
 # 2. Research
 facts = client.call("leafpad_get_company_data", { question: f"What do we know about {topic}?" })
 
 # 3. Draft (HTML), per content-generation.md
-article = model.run(inputs={ topic, brand, facts })
+article = model.run(inputs={ topic, brand, extra, facts })
 
 # 4. Citations, per citation-validator.md (uses web fetch/search + governance)
 article = run_agent("citation-validator.md", article, brand.governance)
@@ -38,13 +39,19 @@ article = run_agent("citation-validator.md", article, brand.governance)
 seo = run_agent("seo-optimizer.md", article, brand)
 seo.feature_image = client.call("leafpad_generate_image", { prompt: seo.image_prompt })
 
-# 6. QA gate, per quality-assurance.md
-if not run_agent("quality-assurance.md", article, brand).passed: revise()
+# 6. QA gate: check_draft (mandatory), then quality-assurance.md; revise once, stop on a second failure
+for attempt in (1, 2):
+  check = client.call("check_draft", { brand_kit_id, draft_text: plain_text(article), platform: "blog" })
+  if check.passed and run_agent("quality-assurance.md", article, brand).passed: break
+  if attempt == 2: stop("QA failed twice; do not publish")
+  article = revise(article, check)
 
-# 7. Publish
+# 7. Publish (image embedded in html_content; there is no featured-image field)
 result = client.call("leafpad_create_post", {
-  name: article.title, slug: article.slug, content: article.body_html,
-  tags: seo.tags, seo: seo.seo, published: False, feature_image: seo.feature_image,
+  organization_slug, name: article.title, slug: article.slug,
+  html_content: article.body_html, post_type: "ARTICLE", published: False,
+  seo_title: seo.title, seo_description: seo.description,
+  seo_keywords: ", ".join(seo.keywords), tags: ", ".join(seo.tags),
 })
 ```
 
