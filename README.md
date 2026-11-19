@@ -7,8 +7,8 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 - **2 MCP servers** — Brand Kit OS (brand context) + Leafpad (blog publishing)
 - **3 skills** — Brand Context, Voice Enforcement, and Topic Sourcing
 - **10 agents** — content generation, brand review, audience adaptation, QA, SEO optimizer, Leafpad publisher, Cowork digest publisher, plus **topic-scout**, **citation-validator**, and **leafpad-ai-scheduler**
-- **9 commands** — see the cheat sheet below
-- **Session hook** — auto-loads your brand summary at session start
+- **12 commands**: see the cheat sheet below
+- **Session hook**: tells Claude to start with `get_agent_briefing`, load `get_brand_context_for_agent` before writing, and run `check_draft` on every draft
 
 ## Command cheat sheet
 
@@ -17,7 +17,10 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 | `/brand-kit-os-leafpad:setup` | Guided first-run setup: connect both MCP servers, set publish mode, verify |
 | `/brand-kit-os-leafpad:doctor` | Health check + setup punch list |
 | `/brand-kit-os-leafpad:publish-pipeline <topic> [--draft\|--publish\|--schedule <iso>]` | Research → draft → cite → SEO → QA → publish |
-| `/brand-kit-os-leafpad:ai-schedule "<title>" <iso>` | Schedule a Leafpad-AI-generated future post |
+| `/brand-kit-os-leafpad:ai-schedule "<keyword>" <iso>` | Schedule one Leafpad-AI-generated future post ($1 when it runs) |
+| `/brand-kit-os-leafpad:weekly-schedule [--dry-run]` | Sunday run: research two topics and schedule them for Tuesday and Thursday with full briefs |
+| `/brand-kit-os-leafpad:post-qa` | Tue/Thu run: check the generated post (brand, links, CTA, SEO), fix what is safe, publish if still a draft |
+| `/brand-kit-os-leafpad:blog-analytics [--summary]` | Per-post Search Console and GA4 with topic and rewrite recommendations |
 | `/brand-kit-os-leafpad:plan-week [--count N]` | Research + build a content calendar |
 | `/brand-kit-os-leafpad:execute-calendar [--ai-schedule\|--draft-now]` | Schedule/draft a planned calendar |
 | `/brand-kit-os-leafpad:sync-brand-to-kb` | Push brand context into Leafpad's Knowledge Base |
@@ -47,7 +50,7 @@ Connect your brand context and Leafpad blog publishing to Claude via Model Conte
 
 ## Publishing
 
-`/brand-kit-os-leafpad:publish-pipeline <topic | brief | pasted source>` runs the full pipeline: load the **full breadth** of brand context (core, personality, expression, governance, audience, products, personas, knowledge files) → draft → SEO + media metadata + internal linking → QA → publish to Leafpad.
+`/brand-kit-os-leafpad:publish-pipeline <topic | brief | pasted source>` runs the full pipeline: load brand context (`get_brand_context_for_agent` plus `get_brand_kit` sections for core, personality, products and SEO, and relevant knowledge files), draft, SEO + media metadata + internal linking, `check_draft` and QA, then publish to Leafpad.
 
 It honors the `publish_mode` you chose at install (default `draft`). Override per-run with a flag:
 
@@ -69,9 +72,9 @@ The pipeline builds a rich-article object, then projects it onto the fields `lea
 |---|---|
 | `name`, `slug` | drafted by `content-generation` from brand core + personality + expression |
 | `html_content` (HTML, not markdown) | drafted body, rendered to HTML, with internal links inserted |
-| `seo_title` / `seo_description` / `seo_keywords` (comma string) | `seo-optimizer` using `get_brand_kit_expression.preferred_terminology` |
+| `seo_title` / `seo_description` / `seo_keywords` (comma string) | `seo-optimizer` using the kit's `preferred_terminology` and `seo` keywords |
 | `tags` (comma string of names) | `leafpad_list_tags` + draft body; existing names reused, new ones auto-created |
-| `published` | resolved from `publish_mode` or override flags (**defaults to `true`** — drafts send `published: false`) |
+| `published` | resolved from `publish_mode` or override flags (**defaults to `false`**; drafts still send `published: false` explicitly) |
 
 The body's `author` is auto-set by Leafpad from your account. Feature images are produced via the separate **`leafpad_generate_image`** tool, not a post field. Fields the rich object carries for other channels — `excerpt`, `categories`, `reading_time`, `canonical_url` — are **not** Leafpad post fields and are dropped on publish. `leafpad-publisher` still reports a `schema_fit` block so you can spot any future schema change.
 
@@ -115,7 +118,7 @@ The plugin can research what to write about, not just how. The `topic-scout` age
 /brand-kit-os-leafpad:execute-calendar         # schedule it on Leafpad
 ```
 
-The quality of research depends on a **sources registry** (RSS feeds, citation domains, keyword themes, cadence) — set it up by asking *"Help me set up my content sources registry"* or see the **topic-sourcing** skill. To run this automatically every week/month, see [`docs/routines/`](docs/routines/).
+The quality of research depends on a **sources registry** (RSS feeds, citation domains, keyword themes, cadence) — set it up by asking *"Help me set up my content sources registry"* or see the **topic-sourcing** skill. To run the two-posts-a-week pipeline automatically, see [`docs/routines/weekly-leafpad-scheduler.md`](docs/routines/weekly-leafpad-scheduler.md); for a monthly calendar, [`docs/routines/monthly-editorial-calendar.md`](docs/routines/monthly-editorial-calendar.md).
 
 ## Citations & authority
 
@@ -129,17 +132,36 @@ The `citation-validator` agent adds 2–4 **verified** outbound citations — ea
 
 Pushes your Brand Kit OS context (voice, governance, audience, products) into your Leafpad org's Knowledge Base via Leafpad's REST API. Once synced, **every** Leafpad-AI-generated post — including AI-scheduled ones — is brand-aware, not just the ones the plugin hand-crafts.
 
-## AI scheduling — Leafpad-generated future posts
+## AI scheduling: Leafpad-generated future posts
 
-`/brand-kit-os-leafpad:ai-schedule "<title>" <ISO-8601 UTC>` schedules a brand-aware future post via Leafpad's AI. **Leafpad generates the post at the scheduled time**, not us — the plugin prepares a brand-aware brief (title + secondary prompt encoding voice/governance/audience) and hands it off to `leafpad_add_scheduled_posts`.
+`/brand-kit-os-leafpad:ai-schedule "<keyword>" <ISO-8601 UTC>` schedules a brand-aware future post via Leafpad's AI. **Leafpad generates the post at the scheduled time**, not us. The plugin prepares a full brief from the kit ([`references/scheduled-brief-template.md`](plugins/brand-kit-os-leafpad/references/scheduled-brief-template.md)) and calls `leafpad_add_scheduled_posts` with `organization_slug` and `posts: [{ title, date, prompt, volume, kd, intent, post_type, parent_id, parent_scheduled_post_id }]`.
 
 Example:
 
 ```
-/brand-kit-os-leafpad:ai-schedule "Building a brand-first content engine" 2026-07-01T09:30:00Z
+/brand-kit-os-leafpad:ai-schedule "brand voice for AI agents" 2026-11-24T15:00:00Z
 ```
 
-> **Hand-crafted vs AI-scheduled.** `/publish-pipeline --schedule <iso>` and `/ai-schedule` both queue a topic for Leafpad to **generate** on the date (Leafpad has no `publish_at` to flip a finished draft live later). Use `/publish-pipeline` for immediate `--draft`/`--publish` runs that we write end-to-end, and `/ai-schedule` (or `--schedule`) when you want Leafpad's own AI to write the future post from a brand-aware brief. See [`LEAFPAD_REQUESTS.md`](LEAFPAD_REQUESTS.md) for gaps we've raised with Leafpad.
+What to expect (verified 2026-11-18/19):
+
+- **$1 per scheduled post**, charged when it runs. `leafpad_create_post` posts are free.
+- **Auto-publish:** the `brand-kit-os` account publishes at generation (row 1702 became live post 2198 three minutes after its slot). There is no draft option on scheduling yet; see [`LEAFPAD_REQUESTS.md`](LEAFPAD_REQUESTS.md).
+- **Leafpad decides** the final title (treat `title` as the target keyword), slug, tags, SEO fields, images and internal links. `/post-qa` checks the result.
+- **The queue is editable:** `leafpad_list_scheduled_posts`, `leafpad_update_scheduled_post` and `leafpad_delete_scheduled_posts` (deleting a pending row is never charged).
+
+> **Hand-crafted vs AI-scheduled.** `/publish-pipeline --schedule <iso>` and `/ai-schedule` both queue a topic for Leafpad to **generate** on the date (Leafpad has no `publish_at` to flip a finished draft live later). Use `/publish-pipeline` for immediate `--draft`/`--publish` runs that we write end-to-end.
+
+## Scheduled pipeline: two posts a week
+
+Leafpad's AI writes the posts; Claude finds the topics and supplies the brand context.
+
+| When | Command | What it does |
+|---|---|---|
+| Sunday | `/brand-kit-os-leafpad:weekly-schedule` | Reads the Brand AI Weekly Digest (Slack `#weekly-digest`), the kit, Leafpad company data, Search Console gaps and fresh research; dedupes against live posts and the calendar; schedules Tuesday and Thursday 09:00 America/Chicago with every field filled (updating a pending row rather than adding one); adds a weekly analytics section |
+| Tue and Thu, about 09:30 Chicago | `/brand-kit-os-leafpad:post-qa` | Finds the generated post, runs `check_draft` and `check_draft_seo`, checks every link (`https://www.brandkitos.com/blogs/<slug>`) and the CTA, fixes HTML and the SEO trio with `leafpad_update_post`, publishes if still a draft, reports |
+| Weekly (summary) or monthly | `/brand-kit-os-leafpad:blog-analytics` | Per-post Search Console (Leafpad, and Supermetrics `sc-domain:brandkitos.com`) and GA4 with 7 and 28-day trends; recommends new topics and rewrites |
+
+Per-brand settings live in [`references/pipeline-brands.json`](plugins/brand-kit-os-leafpad/references/pipeline-brands.json) (AutoLogs is stubbed and disabled until it is configured). Cloud Routines do not load plugins, so [`docs/routines/weekly-leafpad-scheduler.md`](docs/routines/weekly-leafpad-scheduler.md) carries self-contained Routine prompts that use MCP tools only.
 
 ## Leafpad blog publishing
 
@@ -154,45 +176,47 @@ To use it: paste a Cowork digest and ask Claude to publish it.
 
 ## Available MCP tools
 
-### Brand Kit OS (the read tools the pipeline uses)
-
-The live Brand Kit OS MCP server exposes ~48 tools (including write/update tools for every brand section). The publish pipeline uses these read tools:
+### Brand Kit OS (MCP 3.0 read tools the plugin uses)
 
 | Tool | Description |
 |------|-------------|
+| `get_agent_briefing` | Session bootstrap: lists your kits, or one kit's health, next step and account write settings |
 | `list_brand_kits` | List all brand kits you own or have access to |
-| `get_brand_kit_summary` | Compact brand overview (~500 tokens) |
-| `get_brand_kit` | Complete brand kit with all sections |
-| `get_brand_kit_core` | Mission, vision, brand story, promises |
-| `get_brand_kit_personality` | Traits, values, principles, moods |
-| `get_brand_kit_expression` | Tone, verbal style, voice archetypes, visual style |
-| `get_brand_kit_products` | Products, services, features, differentiators |
-| `get_brand_kit_audience` | Target audience personas |
-| `get_brand_kit_governance` | Constraints, compliance, disclosure policy |
-| `get_brand_kit_personas` | AI persona configurations |
-| `list_knowledge_files` | Knowledge files attached to a brand kit |
-| `get_knowledge_file` | Specific knowledge file metadata |
+| `get_brand_kit` | Any part of a kit: the summary with no `sections`, or `sections: [...]` (`core`, `personality`, `expression`, `platform_expressions` + `platform`, `governance`, `visuals`, `seo`, `products`, `partners`, `audience`, `ai_personas`, `competitors`, `customers`, `company_icps`, `knowledge_files`, `expression_examples`, `anti_slop_rules`, `objections`, ...) |
+| `get_brand_context_for_agent` | One-call bundle for a task; `task_type: "content_generation"` + `platform` returns voice, governance, examples, audience and the knowledge index |
+| `get_knowledge_file` | One knowledge file's full content |
+| `check_draft` | Checks a draft against the kit's anti-slop rules, banned terms and writing constraints. The plugin runs it before any draft is shown or sent |
 
-### Leafpad (9 tools)
+MCP 3.0 removed `get_brand_kit_summary`, the `get_brand_kit_<section>` getters, `list_knowledge_files` and `get_platform_expression`; see [`data-model.md`](plugins/brand-kit-os-leafpad/skills/brand-context/references/data-model.md) for the mapping.
+
+### Leafpad
 
 | Tool | Description |
 |------|-------------|
-| `leafpad_create_post` | Create a blog post (draft or published). Body is `html_content` (HTML); `tags`/`seo_keywords` are comma strings; `published` defaults to `true` |
-| `leafpad_update_post` | Update an existing post (no `tags` param — tags are immutable; SEO fields are co-required) |
-| `leafpad_list_posts` | List existing posts for internal linking |
-| `leafpad_get_post` | Read a specific post's content |
+| `leafpad_create_post` | Create a blog post. Body is `html_content` (HTML); `tags`/`seo_keywords` are comma strings; `published` defaults to `false` |
+| `leafpad_update_post` | Update a post (no `tags` param; `html_content` replaces the whole body; SEO fields are co-required) |
+| `publish_post` | Publish a draft the user has agreed to publish |
+| `leafpad_list_posts` | List existing posts (internal links, dedupe) |
+| `leafpad_get_post` | Read a post (`content_format: "html"` before any body edit) |
 | `leafpad_list_tags` | Get existing tags for reuse |
 | `leafpad_list_organizations` | List available organizations |
-| `leafpad_get_company_data` | Query company knowledge base |
-| `leafpad_add_scheduled_posts` | Schedule posts for future generation |
-| `leafpad_generate_image` | Generate a feature/inline image (images are a separate step, not a post field) |
+| `leafpad_get_company_data` | Query the org's indexed company content |
+| `leafpad_add_scheduled_posts` | Schedule AI-generated posts ($1 each when they run) |
+| `leafpad_list_scheduled_posts` | List the content calendar (pending, and completed with `include_completed`) |
+| `leafpad_update_scheduled_post` / `leafpad_delete_scheduled_posts` | Change or remove a pending row |
+| `leafpad_schedule_rewrites` | Schedule an AI rewrite of an existing post (published in place) |
+| `leafpad_get_search_console_data` | Search Console clicks, impressions, CTR, position |
+| `check_draft_seo` | Score a post with Leafpad's on-page SEO checks |
+| `find_pages_needing_attention` | Pages losing search traffic and pending refresh proposals |
+| `leafpad_generate_image` | Generate an image on Leafpad's CDN (embedded in the body; no featured-image field on create/update) |
 
 ## Known Leafpad MCP limitations
 
 - `leafpad_update_post` cannot modify tags after creation (no `tags` parameter) — recreate the post to change tags
 - When updating SEO, send the full trio (`seo_title` + `seo_description` + `seo_keywords`); sending one alone is rejected
 - `leafpad_create_post` body is HTML (`html_content`) — there is no markdown `content` field
-- No delete endpoint — mistakes require Leafpad UI cleanup
+- No post delete endpoint: mistakes require Leafpad UI cleanup (pending scheduled rows can be removed with `leafpad_delete_scheduled_posts`)
+- `leafpad_add_scheduled_posts` has no draft option: on an auto-publishing account the generated post is live at generation
 
 > Note: the older "tags return `[]`" behavior did not reproduce on the calibrated instance (2026-06-13) — `leafpad_list_tags` returned the full tag list and tag reuse worked. Verify per instance.
 

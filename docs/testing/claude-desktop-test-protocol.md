@@ -1,6 +1,6 @@
 # Claude Desktop Test Protocol — v1.4.3
 
-> **Note (calibrated 2026-06-13):** The Leafpad `leafpad_create_post` schema has since been verified against the live MCP. The real accepted fields are `organization_slug`, `name`, `slug`, `html_content` (HTML, not markdown), `post_type`, `published` (defaults `true`), `seo_title`, `seo_description`, `seo_keywords` (comma string), `tags` (comma string). Fields like `excerpt`, `feature_image`, `og_image`, `categories`, `content_format`, `reading_time`, `author_name` are **not** part of the tool and should not be sent — see `plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`. The Phase 5 prompt below is kept as the original schema-discovery exercise; expect those extra fields to be rejected/ignored.
+> **Note (calibrated 2026-06-13):** The Leafpad `leafpad_create_post` schema has since been verified against the live MCP. The real accepted fields are `organization_slug`, `name`, `slug`, `html_content` (HTML, not markdown), `post_type`, `published` (defaults `false` as of 2026-11-19), `seo_title`, `seo_description`, `seo_keywords` (comma string), `tags` (comma string). Fields like `excerpt`, `feature_image`, `og_image`, `categories`, `content_format`, `reading_time`, `author_name` are **not** part of the tool and should not be sent — see `plugins/brand-kit-os-leafpad/agents/references/brand-to-leafpad-mapping.md`. The Phase 5 prompt below is kept as the original schema-discovery exercise; expect those extra fields to be rejected/ignored.
 
 End-to-end test script for the Brand Kit OS + Leafpad plugin, designed to run in **Claude Desktop Chat** with both MCP servers configured. Output captured here drives the v1.5.0 calibration (which Leafpad fields are accepted vs stripped, exact scheduled timestamp format, BKOS section payload shapes).
 
@@ -82,10 +82,10 @@ Repeat for:
 Then for BKOS:
 
 ```
-4. For each Brand Kit OS tool (get_brand_kit_core, get_brand_kit_personality,
-   get_brand_kit_expression, get_brand_kit_products, get_brand_kit_audience,
-   get_brand_kit_governance, get_brand_kit_personas, get_brand_kit_summary),
-   show me the RESPONSE schema — every nested field with its type, marked
+4. For each Brand Kit OS read tool (get_agent_briefing, get_brand_kit with no
+   sections, get_brand_kit with sections ["core", "personality", "expression",
+   "products", "audience", "governance", "ai_personas"], get_brand_context_for_agent
+   with task_type "content_generation", check_draft), show me the RESPONSE schema — every nested field with its type, marked
    required vs optional. Structured table per tool.
 ```
 
@@ -96,14 +96,16 @@ Then for BKOS:
 ### Phase 3 — sample data pull
 
 ```
-5. Get the full summary for the "Brand Kit OS" brand kit. Then call
-   get_brand_kit_expression, get_brand_kit_governance, get_brand_kit_audience,
-   get_brand_kit_products, get_brand_kit_personas, and get_brand_kit_personality
+5. Get the summary for the "Brand Kit OS" brand kit (get_brand_kit with no
+   sections). Then call get_brand_kit with sections ["expression", "governance",
+   "audience", "products", "ai_personas", "personality"] and
+   get_brand_context_for_agent (task_type "content_generation", platform "blog")
    for the same kit. Show each raw response in a separate code block, labeled.
 ```
 
 ```
-6. List the knowledge files attached to the Brand Kit OS brand kit. If any,
+6. List the knowledge files attached to the Brand Kit OS brand kit (get_brand_kit
+   with sections ["knowledge_files"]). If any,
    call get_knowledge_file for each and show the response.
 ```
 
@@ -164,16 +166,18 @@ Walks Claude through what `/publish-pipeline` would do, without the plugin.
 ### Phase 6 — scheduled publish
 
 ```
-9. Now schedule a SECOND draft for 2026-06-15T13:00:00Z. Same rich-article
-   object shape, but for a different topic of your choosing relevant to the
-   brand. Use leafpad_add_scheduled_posts. Report:
-   - which scheduled_at format the tool accepted (ISO 8601? Unix epoch?
-     What timezone interpretation?)
-   - the full tool response
+9. Now schedule a SECOND post for a future date. Use leafpad_add_scheduled_posts
+   with organization_slug and posts: [{ title (target keyword), date (ISO 8601 UTC
+   with Z), prompt (a full brief per references/scheduled-brief-template.md),
+   volume, kd, intent, post_type }]. This costs $1 when it runs and, on an
+   auto-publishing account, goes live at generation: pick a date you can watch
+   and delete the row with leafpad_delete_scheduled_posts if you do not want it.
+   Report:
+   - the full tool response and the row as leafpad_list_scheduled_posts shows it
    - the schema-fit table (same as Phase 5)
 ```
 
-**Capture:** the exact scheduled_at format the API accepted. Our publisher needs to match.
+**Capture:** the row as stored (date, title, prompt, keyword data). Verified format 2026-11-19: ISO 8601 UTC with `Z`.
 
 ---
 
@@ -209,14 +213,11 @@ leafpad_list_tags: [table or "returned []"]
 leafpad_list_organizations: [table]
 leafpad_get_company_data: [table]
 
-get_brand_kit_core: [table]
-get_brand_kit_personality: [table]
-get_brand_kit_expression: [table]
-get_brand_kit_products: [table]
-get_brand_kit_audience: [table]
-get_brand_kit_governance: [table]
-get_brand_kit_personas: [table]
-get_brand_kit_summary: [table]
+get_agent_briefing: [table]
+get_brand_kit (summary): [table]
+get_brand_kit (each section): [table]
+get_brand_context_for_agent: [table]
+check_draft: [table]
 
 === PHASE 3 — sample BKOS data ===
 (paste raw responses)
@@ -231,7 +232,7 @@ post_id: ...
 === PHASE 6 — scheduled schema_fit ===
 accepted: [...]
 stripped: [{ field, error }]
-scheduled_at format accepted: ...
+scheduled row as listed: ...
 url / post_id: ...
 
 === PHASE 7 — low-fit calibration ===
@@ -242,7 +243,7 @@ reasoning Claude gave: ...
 ## What I'll do with the output
 
 1. Update `references/brand-to-leafpad-mapping.md` — move "candidate" fields that Leafpad accepted into "verified"; move rejected ones into a new "unsupported" section.
-2. Hard-code the verified `scheduled_at` format in `leafpad-publisher`.
+2. Confirm the scheduled-post call shape in `leafpad-publisher` and `leafpad-ai-scheduler`.
 3. Calibrate `seo-optimizer`'s defaults using the real BKOS payload shapes.
 4. Adjust the brand-fit threshold based on Phase 7 behavior.
 5. Open the v1.5.0 PR (topic-scout, citation-validator, /plan-week, /execute-calendar, /doctor, portable prompts/) with everything tuned to your real data.
