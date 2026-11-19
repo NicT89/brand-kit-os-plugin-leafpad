@@ -1,5 +1,46 @@
 # Changelog
 
+## 1.11.0 - 2026-11-19
+
+Brand Kit OS MCP 3.0, accurate Leafpad scheduling, and a scheduled two-posts-a-week pipeline.
+
+- **Brand Kit OS MCP 3.0.** 3.0 removed `get_brand_kit_summary`, `get_brand_kit_core`,
+  `_personality`, `_expression`, `_governance`, `_audience`, `_products`, `_personas`,
+  `list_knowledge_files` and `get_platform_expression`. Every agent, command, skill, reference,
+  the SessionStart hook and the platform guides now use `get_agent_briefing`, `get_brand_kit`
+  with `sections`, `get_brand_context_for_agent` (`task_type: "content_generation"` plus
+  `platform`) and `get_knowledge_file`. `skills/brand-context/references/data-model.md` maps
+  each removed tool to its replacement and lists the 3.0 write tools.
+- **`check_draft` is mandatory.** Every draft is checked against the kit's anti-slop rules,
+  banned terms and writing constraints before it is shown or sent; hard violations block.
+- **Scheduler call shape fixed.** `leafpad-ai-scheduler` and `/ai-schedule` sent
+  `scheduled_at`, `secondary_prompt` and `organization_id`, which do not exist. They now send
+  `organization_slug` and `posts: [{ title, date, prompt, volume, kd, intent, post_type,
+  parent_id, parent_scheduled_post_id }]`, and update a pending row for the same slot with
+  `leafpad_update_scheduled_post` instead of adding a duplicate.
+- **Leafpad queue tools.** Removed the claim that no queue-listing tool exists; the plugin uses
+  `leafpad_list_scheduled_posts`, `leafpad_update_scheduled_post` and
+  `leafpad_delete_scheduled_posts`.
+- **Documented costs and behaviour.** A scheduled post costs $1 when it runs, and the
+  `brand-kit-os` account auto-publishes at generation (observed 2026-11-18: row 1702 became
+  live post 2198 three minutes after its slot). `leafpad_create_post` now defaults `published`
+  to `false`. Digest-publisher links use `https://www.brandkitos.com/blogs/<slug>`.
+- **New commands.** `/weekly-schedule` (Sunday: digest, kit, company data, Search Console gaps
+  and research into two fully filled Tuesday and Thursday rows), `/post-qa` (Tuesday and
+  Thursday: `check_draft`, link and CTA checks, `check_draft_seo`, safe fixes, publish if still
+  a draft) and `/blog-analytics` (per-post Search Console and GA4 with topic and rewrite
+  recommendations).
+- **New references.** `references/scheduled-brief-template.md` (every field and the 11-part
+  brief) and `references/pipeline-brands.json` (per-brand config; AutoLogs stubbed, disabled).
+- **Routines.** `docs/routines/weekly-3-articles.md` is replaced by
+  `docs/routines/weekly-leafpad-scheduler.md`, with self-contained Routine prompts that work
+  without the plugin loaded.
+- **Leafpad requests.** `LEAFPAD_REQUESTS.md` records what shipped and adds requests for a
+  draft option on scheduling, MCP access to Business Overview / Writing Style / Keywords / Blog
+  Options, tags and SEO fields on scheduled posts, internal links that honor the base path and
+  only link live slugs, and the Search Console domain property.
+- **Version bump.** `1.10.0` to `1.11.0` (`/doctor` and `/setup` constants updated).
+
 ## 1.10.0 - 2026-11-11
 
 Brand Kit OS signs in through the browser in Claude. No API key needed.
